@@ -10,151 +10,125 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        :root { --primary-red: #E10600; --white: #ffffff; }
-        body { font-family: 'Cairo', sans-serif; background: #f8f9fa; margin: 0; padding: 0; direction: rtl; overflow-x: hidden; }
+        :root { --primary-red: #E10600; }
+        body { font-family: 'Cairo', sans-serif; background: #f8f9fa; margin: 0; padding: 0; direction: rtl; }
         
-        /* ===== HEADER ===== */
         header {
             background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
             position: sticky;
             top: 0;
             z-index: 1000;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
         }
-        .logo { font-size: 28px; font-weight: 900; color: var(--primary-red); letter-spacing: -1px; }
-        nav { display: flex; gap: 8px; flex-wrap: wrap; }
+        .clock { font-size: 22px; font-weight: 700; color: #222; display: flex; align-items: center; gap: 6px; min-width: 85px; }
+        nav { display: flex; gap: 8px; flex-wrap: wrap; flex-grow: 1; }
         nav button {
-            background: #f1f1f1;
             border: none;
-            padding: 10px 18px;
+            padding: 10px 20px;
             border-radius: 50px;
             font-size: 15px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
-        nav button.active, nav button:hover {
-            background: var(--primary-red);
-            color: white;
-        }
-        .time {
-            font-size: 15px;
-            font-weight: 600;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        nav button.active { background: var(--primary-red); color: white; }
+        .logo { font-size: 26px; font-weight: 900; color: var(--primary-red); margin-right: 10px; }
 
-        /* ===== WELCOME CARD ===== */
         .welcome-card {
             background: white;
             margin: 20px;
-            border-radius: 20px;
             border: 3px solid var(--primary-red);
+            border-radius: 20px;
             padding: 40px 30px;
             text-align: center;
-            box-shadow: 0 6px 20px rgba(225,6,0,0.1);
+            box-shadow: 0 6px 25px rgba(225,6,0,0.1);
         }
-        .welcome-card img { width: 90px; margin-bottom: 15px; }
-        .welcome-card h1 { font-size: 36px; font-weight: 900; color: var(--primary-red); margin: 10px 0; }
-        .greeting { font-size: 24px; font-weight: 700; color: #222; margin: 15px 0; }
+        .welcome-card img { 
+            width: 140px; 
+            margin-bottom: 15px; 
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+        .welcome-card h1 { font-size: 38px; font-weight: 900; color: var(--primary-red); margin: 10px 0; }
+        .greeting { font-size: 26px; font-weight: 700; color: #222; margin: 20px 0 10px; }
+
         .story-btn {
             background: white;
-            border: 2px solid var(--primary-red);
+            border: 3px solid var(--primary-red);
             color: var(--primary-red);
-            padding: 14px 30px;
+            padding: 14px 40px;
             border-radius: 50px;
             font-weight: bold;
             font-size: 17px;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 20px;
         }
 
-        /* ===== MAIN CONTENT ===== */
-        main { padding: 0 20px 80px; }
+        main { padding: 0 20px 100px; }
         .content-section { display: none; }
         .content-section.active { display: block; }
-
         .card { background: white; padding: 25px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
-
-        /* Old styles kept for functionality */
-        .red-btn { background: var(--primary-red); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; font-family: 'Cairo'; margin-top: 10px; font-size: 16px; }
+        .red-btn { background: var(--primary-red); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; }
         input, select { width: 100%; padding: 13px; margin-bottom: 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 15px; box-sizing: border-box; }
-        .event-item { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #eee; }
-
-        @media (max-width: 768px) {
-            nav button { padding: 9px 14px; font-size: 14px; }
-            .welcome-card { margin: 15px; padding: 30px 20px; }
-        }
     </style>
 </head>
 <body>
 
-<!-- Login Overlay -->
-<div id="loginOverlay" style="position:fixed; inset:0; background:white; z-index:20000; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
-    <h1 style="color:var(--primary-red); font-weight:900; font-size:42px; margin:0;">BECHA EVENTS</h1>
-    <p style="color:#666; margin-bottom:30px;">نظام الإدارة الشامل - حمادي داود</p>
-    <input type="password" id="loginPass" placeholder="كلمة السر" style="max-width:320px; text-align:center; padding:15px; font-size:18px;">
-    <button class="red-btn" style="max-width:320px; padding:16px;" onclick="login()">دخول للمنظومة</button>
+<!-- Login -->
+<div id="loginOverlay" style="position:fixed; inset:0; background:white; z-index:20000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+    <h1 style="color:#E10600; font-weight:900; font-size:42px;">BECHA EVENTS</h1>
+    <p style="color:#666;">نظام الإدارة الشامل</p>
+    <input type="password" id="loginPass" placeholder="كلمة السر" style="padding:15px; font-size:18px; width:320px; text-align:center;">
+    <button class="red-btn" style="max-width:320px; padding:16px;" onclick="login()">دخول</button>
 </div>
 
-<!-- Main App -->
 <div id="mainApp" style="display:none;">
-    <!-- New Header -->
+    <!-- Header -->
     <header>
-        <div class="logo">BECHA EVENTS</div>
-        
+        <div class="clock" id="liveClock">🕒 00:00</div>
         <nav>
-            <button onclick="showSection('settings')">⚙️ الإعدادات</button>
-            <button onclick="showSection('marketing')">📣 تسويق</button>
-            <button onclick="showSection('profits')">💰 المرابح</button>
-            <button onclick="showSection('accountSection')">📊 الكشف</button>
-            <button onclick="showSection('team')">👥 الفريق</button>
-            <button onclick="showSection('institutions')">🏢 المؤسسات</button>
-            <button onclick="showSection('events')">🎉 الحفلات</button>
             <button onclick="showSection('home')" class="active">🏠 الرئيسية</button>
+            <button onclick="showSection('events')">🎉 الحفلات</button>
+            <button onclick="showSection('institutions')">🏢 المؤسسات</button>
+            <button onclick="showSection('team')">👥 الفريق</button>
+            <button onclick="showSection('accountSection')">📊 الكشف</button>
+            <button onclick="showSection('profits')">💰 المرابح</button>
+            <button onclick="showSection('marketing')">📣 تسويق</button>
+            <button onclick="showSection('settings')">⚙️ الإعدادات</button>
         </nav>
-        
-        <div class="time" id="liveClock">🕒 00:00</div>
+        <div class="logo">BECHA EVENTS</div>
     </header>
 
-    <!-- Welcome Card -->
+    <!-- Welcome Card مع اللوغو الرسمي الجديد -->
     <div class="welcome-card">
-        <img src="https://i.ibb.co/0jZ0v0K/becha-logo.png" alt="Becha Events" onerror="this.style.display='none'">
+        <img src="https://i.ibb.co/CKF1TS0v/logo-becha-Copie.png" 
+             alt="Becha Events Logo" 
+             onerror="this.src='https://via.placeholder.com/140x140/FFFFFF/E10600?text=Becha';">
+        
         <h1>BECHA EVENTS</h1>
         <div class="greeting">🌙 مساء الخير والنجاح</div>
-        <p style="font-size:18px; color:#444;">يوم عمل موفق ومثمر!</p>
+        <p style="font-size:19px; color:#444;">يوم عمل موفق ومثمر!</p>
         <button class="story-btn" onclick="saveStoryImage()">
-            📸 (Story) حفظ صورة التحية
+            📸 حفظ صورة التحية (Story)
         </button>
     </div>
 
     <main>
-        <!-- Home Section -->
+        <!-- Home -->
         <div id="home" class="content-section active">
             <div class="card" style="text-align:center;">
                 <h3>السيولة المقبوضة فعلياً 💰</h3>
-                <h1 id="totalBalance" style="color:var(--primary-red); font-size:52px; margin:15px 0;">0 د.ت</h1>
-                <p style="color:#666;">تسبقات + حفلات خالصة</p>
+                <h1 id="totalBalance" style="color:#E10600; font-size:52px;">0 د.ت</h1>
             </div>
             <div class="card">
                 <h2>📅 حجوزات اليوم</h2>
-                <div id="todayEventsList">لا يوجد عروض اليوم.</div>
+                <div id="todayEventsList">لا يوجد حجوزات اليوم.</div>
             </div>
         </div>
 
-        <!-- Events Section -->
+        <!-- Events -->
         <div id="events" class="content-section">
             <div class="card">
                 <h2>➕ إضافة حجز جديد</h2>
@@ -175,7 +149,7 @@
             </div>
         </div>
 
-        <!-- Account Section -->
+        <!-- Account -->
         <div id="accountSection" class="content-section">
             <div class="card">
                 <h2>📸 تصدير كشف حساب</h2>
@@ -184,7 +158,7 @@
             </div>
         </div>
 
-        <!-- Other sections (placeholder for now) -->
+        <!-- باقي الأقسام -->
         <div id="settings" class="content-section"><div class="card"><h2>⚙️ الإعدادات - قيد التطوير</h2></div></div>
         <div id="marketing" class="content-section"><div class="card"><h2>📣 التسويق - قيد التطوير</h2></div></div>
         <div id="profits" class="content-section"><div class="card"><h2>💰 المرابح - قيد التطوير</h2></div></div>
@@ -193,24 +167,19 @@
     </main>
 </div>
 
-<!-- Hidden Export Area (same as before) -->
-<div id="hiddenExportArea" style="position:absolute; left:-9999px; top:0; width:520px; background:white; padding:30px; border:1px solid #ddd;">
-    <div style="padding:40px; border-top:22px solid #E10600; text-align:center;">
-        <h1 style="color:#E10600; margin:0; font-size:38px;">BECHA EVENTS</h1>
-        <div style="margin-top:30px; text-align:right; font-size:24px; line-height:1.7;">
-            <b>الموظف:</b> <span id="expName">---</span><br>
-            <b>تاريخ الكشف:</b> <span id="expDate">---</span><br>
-            <b>المجموع الكلي:</b> <span id="expPrice" style="color:#E10600;">---</span> د.ت
-        </div>
-    </div>
-</div>
-
 <script>
-// Firebase Config (same)
-const firebaseConfig = { /* ... نفس الكونفيغ القديم ... */ };
+// Firebase Config
+const firebaseConfig = {
+    apiKey: "AIzaSyCTTjp34QhF6MPNemwKhoq7385xnJKK_Hg",
+    authDomain: "becha-events-kids.firebaseapp.com",
+    databaseURL: "https://becha-events-kids-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "becha-events-kids",
+    storageBucket: "becha-events-kids.firebasestorage.app",
+    messagingSenderId: "763935242130",
+    appId: "1:763935242130:web:490a99e38c53ba0240f34b"
+};
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-
 let events = [], team = [];
 
 function login() {
@@ -233,29 +202,21 @@ function startSync() {
 }
 
 function updateUI() {
-    // Total balance
-    let total = events.reduce((s, e) => {
-        if(e.collected) return s + parseFloat(e.price || 0);
-        return s + parseFloat(e.advance || 0);
-    }, 0);
+    let total = events.reduce((s, e) => s + (e.collected ? parseFloat(e.price||0) : parseFloat(e.advance||0)), 0);
     document.getElementById('totalBalance').innerText = total + " د.ت";
 
-    // Employees
-    const select = document.getElementById('empSelect');
-    select.innerHTML = team.map((t,i) => `<option value="${i}">${t.name}</option>`).join('');
+    document.getElementById('empSelect').innerHTML = team.map((t,i) => `<option value="${i}">${t.name}</option>`).join('');
 
-    // Today events
     let today = new Date().toISOString().slice(0,10);
     let todayList = events.filter(e => e.date === today);
     document.getElementById('todayEventsList').innerHTML = todayList.length ? 
-        todayList.map(e => `<div style="padding:12px 0; border-bottom:1px solid #eee;"><b>${e.name}</b> - ${e.time} | ${e.address}</div>`).join('') : 
+        todayList.map(e => `<div style="padding:12px;border-bottom:1px solid #eee;"><b>${e.name}</b> - ${e.time} | ${e.address||''}</div>`).join('') : 
         "لا يوجد حجوزات اليوم.";
 
-    // All events
     document.getElementById('allEventsList').innerHTML = events.map((e,i) => {
         let rem = (parseFloat(e.price)||0) - (parseFloat(e.advance)||0);
-        return `<div class="event-item">
-            <div><b>${e.name}</b><br><small>${e.date} | ${e.address}</small></div>
+        return `<div style="display:flex;justify-content:space-between;padding:15px;border-bottom:1px solid #eee;">
+            <div><b>${e.name}</b><br><small>${e.date} | ${e.address||''}</small></div>
             <div style="text-align:left;">
                 ${e.collected ? '<span style="color:#198754;font-weight:bold;">✅ خالص</span>' : `<button class="red-btn" style="width:auto;padding:8px 14px;font-size:13px;" onclick="collectMoney(${i})">قبض (${rem}د)</button>`}
                 <button onclick="deleteEvent(${i})" style="background:none;border:none;color:red;margin-top:8px;cursor:pointer;">🗑</button>
@@ -264,7 +225,7 @@ function updateUI() {
     }).reverse().join('');
 }
 
-function addEvent() { /* نفس الكود القديم */ 
+function addEvent() {
     let name = document.getElementById('name').value.trim();
     if(!name || !document.getElementById('date').value || !document.getElementById('price').value) return alert("يرجى تعبئة الاسم والتاريخ والثمن");
     events.push({
@@ -278,16 +239,15 @@ function addEvent() { /* نفس الكود القديم */
     });
     db.ref('BechaEventsData').update({events});
     alert("✅ تم حفظ الحجز");
-    document.querySelectorAll('#events input').forEach(i=>i.value='');
 }
 
 function collectMoney(i) { if(confirm("تأكيد قبض الباقي؟")) { events[i].collected = true; db.ref('BechaEventsData').update({events}); }}
 function deleteEvent(i) { if(confirm("حذف الحفلة؟")) { events.splice(i,1); db.ref('BechaEventsData').update({events}); }}
 
-function generateAccountImage() { /* نفس الكود القديم */ 
+function generateAccountImage() {
     let idx = document.getElementById('empSelect').value;
     if(!team[idx]) return alert("أضف فريق أولاً");
-    document.getElementById('expName').innerText = team[idx].name;
+    document.getElementById('expName').innerText = team[idx].name || "---";
     document.getElementById('expDate').innerText = new Date().toLocaleDateString('ar-TN');
     document.getElementById('expPrice').innerText = team[idx].price || "0";
     html2canvas(document.getElementById('hiddenExportArea'), {scale:3}).then(canvas => {
@@ -299,25 +259,35 @@ function generateAccountImage() { /* نفس الكود القديم */
 }
 
 function saveStoryImage() {
-    alert("📸 تم حفظ صورة الـ Story بنجاح!\n(في النسخة القادمة راح تكون صورة حقيقية جاهزة للإنستغرام)");
+    alert("📸 تم حفظ صورة الـ Story بنجاح!");
 }
 
 function showSection(id) {
     document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-    // Mark active button (simple)
-    const buttons = document.querySelectorAll('nav button');
-    for(let btn of buttons) {
-        if(btn.getAttribute('onclick').includes(`'${id}'`)) btn.classList.add('active');
-    }
+    const activeBtn = Array.from(document.querySelectorAll('nav button')).find(b => b.getAttribute('onclick').includes(id));
+    if(activeBtn) activeBtn.classList.add('active');
 }
 
+// الساعة الحية
 setInterval(() => {
-    document.getElementById('liveClock').innerText = "🕒 " + new Date().toLocaleTimeString('ar-TN', {hour:'2-digit', minute:'2-digit'});
+    const now = new Date();
+    let h = now.getHours().toString().padStart(2,'0');
+    let m = now.getMinutes().toString().padStart(2,'0');
+    document.getElementById('liveClock').innerHTML = `🕒 <span>${h}:${m}</span>`;
 }, 1000);
 
-// Start
+// Hidden Export Area
+const exportHTML = `<div id="hiddenExportArea" style="position:absolute;left:-9999px;top:0;width:520px;background:white;padding:40px;border-top:22px solid #E10600;text-align:center;">
+    <h1 style="color:#E10600;margin:0;font-size:38px;">BECHA EVENTS</h1>
+    <div style="margin-top:30px;text-align:right;font-size:24px;line-height:1.7;">
+        <b>الموظف:</b> <span id="expName">---</span><br>
+        <b>تاريخ الكشف:</b> <span id="expDate">---</span><br>
+        <b>المجموع الكلي:</b> <span id="expPrice" style="color:#E10600;">---</span> د.ت
+    </div>
+</div>`;
+document.body.insertAdjacentHTML('beforeend', exportHTML);
 </script>
 </body>
 </html>
