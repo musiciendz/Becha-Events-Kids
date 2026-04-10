@@ -3,1181 +3,222 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Becha Events</title>
+<title>Becha Events - Management Pro</title>
 
 <meta name="theme-color" content="#E10600">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Becha Events">
-<link rel="apple-touch-icon" href="icon.png">
 <link rel="manifest" href="manifest.json">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <style>
-:root {
-    --primary-red: #E10600;
-    --dark-text: #222;
-    --light-bg: #f9fdfc;
-    --white: #ffffff;
-}
-
-body {
-    font-family: 'Cairo', sans-serif;
-    background-color: var(--light-bg);
-    margin: 0;
-    color: var(--dark-text);
-    padding-bottom: 30px;
-    -webkit-user-select: none; 
-    user-select: none;
-}
-
-input, textarea, select {
-    -webkit-user-select: auto;
-    user-select: auto;
-}
-
-header {
-    background: var(--white);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    padding-top: env(safe-area-inset-top); 
-    padding-bottom: 12px;
-    border-bottom: 3px solid var(--primary-red);
-}
-
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px;
-}
-
-.clock-text {
-    color: var(--primary-red);
-    font-size: 13px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.logo-text {
-    color: var(--primary-red);
-    font-size: 20px;
-    font-weight: 900;
-    direction: ltr;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.nav-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    justify-content: center;
-    padding: 0 10px;
-}
-
-.nav-buttons button {
-    background: var(--white);
-    color: #555;
-    border: 1px solid #ddd;
-    padding: 8px 10px;
-    font-size: 13px;
-    font-weight: 700;
-    border-radius: 8px;
-    flex: 1 1 auto;
-    white-space: nowrap;
-    font-family: 'Cairo', sans-serif;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.nav-buttons button:active, .nav-buttons button.active-nav {
-    background: #fff4f4;
-    color: var(--primary-red);
-    border-color: var(--primary-red);
-}
-
-.section {
-    display: none;
-    padding: 20px 15px;
-    max-width: 600px;
-    margin: 0 auto;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
+:root { --primary-red: #E10600; --dark-text: #222; --light-bg: #f9fdfc; --white: #ffffff; }
+body { font-family: 'Cairo', sans-serif; background-color: var(--light-bg); margin: 0; color: var(--dark-text); padding-bottom: 30px; -webkit-user-select: none; user-select: none; }
+input, textarea, select { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Cairo'; box-sizing: border-box; }
+header { background: var(--white); box-shadow: 0 2px 10px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 100; padding-top: env(safe-area-inset-top); padding-bottom: 12px; border-bottom: 3px solid var(--primary-red); }
+.top-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
+.logo-text { color: var(--primary-red); font-size: 18px; font-weight: 900; direction: ltr; text-transform: uppercase; }
+.sync-dot { height: 10px; width: 10px; background-color: #198754; border-radius: 50%; display: inline-block; margin-right: 5px; }
+.sync-pulse { animation: pulse-green 1.5s infinite; }
+@keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(25, 135, 84, 0); } 100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); } }
+.nav-buttons { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; padding: 0 10px; }
+.nav-buttons button { background: var(--white); color: #555; border: 1px solid #ddd; padding: 7px 10px; font-size: 11px; font-weight: 700; border-radius: 8px; flex: 1 1 auto; font-family: 'Cairo'; cursor: pointer; }
+.nav-buttons button.active-nav { background: #fff4f4; color: var(--primary-red); border-color: var(--primary-red); }
+.section { display: none; padding: 20px 15px; max-width: 600px; margin: 0 auto; animation: fadeIn 0.3s; }
 .active { display: block; }
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-h2 {
-    color: var(--primary-red);
-    font-size: 20px;
-    font-weight: 800;
-    margin-bottom: 20px;
-    border-bottom: 2px solid var(--primary-red);
-    padding-bottom: 8px;
-    display: inline-block;
-}
-
-input[type="text"], input[type="tel"], input[type="number"], input[type="date"], input[type="time"], select, textarea {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    font-family: 'Cairo', sans-serif;
-    font-size: 15px;
-    box-sizing: border-box;
-    background-color: var(--white);
-}
-
-input:focus, select:focus, textarea:focus {
-    border-color: var(--primary-red);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(225, 6, 0, 0.1);
-}
-
-.red-btn {
-    background: var(--primary-red);
-    color: var(--white);
-    width: 100%;
-    margin-top: 5px;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: 'Cairo', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    box-shadow: 0 4px 6px rgba(225, 6, 0, 0.2);
-}
-
-.action-btn {
-    padding: 8px 10px;
-    font-size: 13px;
-    border-radius: 6px;
-    flex: 1;
-    min-width: 60px;
-    border: 1px solid transparent;
-    cursor: pointer;
-    font-family: 'Cairo', sans-serif;
-    font-weight: bold;
-}
-
-.btn-red { background-color: var(--primary-red); color: white; }
-.btn-outline { background-color: transparent; color: var(--primary-red); border-color: var(--primary-red); }
-.btn-dark { background-color: #333; color: white; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.card { background: var(--white); padding: 15px; margin-bottom: 15px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.04); border-right: 4px solid var(--primary-red); }
+.red-btn { background: var(--primary-red); color: var(--white); width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: 'Cairo'; }
 .btn-green { background-color: #198754; color: white; }
-.btn-gray { background-color: #6c757d; color: white; }
-
-.card {
-    background: var(--white);
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.04);
-    border-right: 4px solid var(--primary-red);
-    line-height: 1.8;
-    font-size: 15px;
-}
-
-.card strong {
-    color: var(--primary-red);
-    font-size: 18px;
-    font-weight: 800;
-}
-
-.stats-box {
-    background: #fffafa;
-    padding: 12px;
-    border-radius: 8px;
-    margin: 10px 0;
-    font-size: 13px;
-    border: 1px solid #fce8e8;
-}
-
-.phone-link {
-    color: var(--dark-text);
-    font-weight: bold;
-    text-decoration: none;
-    display: inline-block;
-    direction: ltr;
-    background: #f4f4f4;
-    padding: 2px 8px;
-    border-radius: 5px;
-    font-size: 14px;
-}
-
-#imageModal {
-    display: none; 
-    position: fixed; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; 
-    background: rgba(0,0,0,0.9); 
-    z-index: 99999; 
-    flex-direction: column; 
-    justify-content: center; 
-    align-items: center;
-}
-
-.expense-item {
-    display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 10px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 8px;
-}
+#loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--white); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+#imageModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 99999; flex-direction: column; justify-content: center; align-items: center; }
 </style>
 </head>
 
 <body>
 
-<div id="imageModal">
-    <p style="color:#fff; font-size:16px; font-weight:bold; margin-bottom:15px; text-align:center; padding: 0 15px;">
-        📥 للحفظ: قم بضغطة مطولة على الصورة ثم اختر "حفظ في الصور" (Save Image)
-    </p>
-    <div style="overflow:auto; max-height:75%; max-width:95%; border-radius:10px; box-shadow: 0 0 20px rgba(225,6,0,0.5);">
-        <img id="resultImage" style="width:100%; display:block;" src="">
-    </div>
-    <button onclick="closeImageModal()" style="margin-top:20px; padding:10px 25px; background:var(--primary-red); color:#fff; border:none; border-radius:8px; font-size:16px; font-weight:bold;">
-        ❌ إغلاق النافذة
-    </button>
+<div id="loginOverlay">
+    <h2 style="color: var(--primary-red); font-weight: 900; margin-bottom: 20px;">BECHA EVENTS</h2>
+    <input type="text" id="loginUser" placeholder="اسم المستخدم">
+    <input type="password" id="loginPass" placeholder="كلمة السر">
+    <button class="red-btn" style="max-width: 300px;" onclick="attemptLogin()">دخول</button>
 </div>
 
-<header>
-    <div class="top-bar">
-        <div id="live-clock" class="clock-text"></div>
-        <div id="logo-container" style="display: flex; align-items: center; justify-content: flex-end; flex-direction: column;">
-            <img id="mainHeaderLogo" src="" style="max-height: 35px; display: none; border-radius: 5px; margin-bottom: 2px;">
-            <div id="mainHeaderText" class="logo-text">Becha Events</div>
-        </div>
+<div id="imageModal">
+    <div style="overflow:auto; max-height:80%; max-width:90%; border-radius:10px;">
+        <img id="resultImage" style="width:100%; display:block;" src="">
     </div>
-    <div class="nav-buttons">
+    <button onclick="closeImageModal()" style="margin-top:20px; padding:10px 25px; background:#fff; border:none; border-radius:8px; font-weight:bold;">❌ إغلاق</button>
+</div>
+
+<header id="mainAppHeader" style="display:none;">
+    <div class="top-bar">
+        <div class="clock-text"><span id="syncDot" class="sync-dot"></span> <span id="live-clock">🕒 --:--</span></div>
+        <div class="logo-text">Becha Events</div>
+    </div>
+    <div class="nav-buttons" id="navContainer">
         <button onclick="show('home', this)" class="active-nav">🏠 الرئيسية</button>
-        <button onclick="show('events', this)">🎭 الحفلات</button>
-        <button onclick="show('institutions', this)">🏫 المؤسسات</button>
-        <button onclick="show('team', this)">👥 الفريق</button>
-        <button onclick="show('expensesList', this)">💸 المصاريف</button>
-        <button onclick="show('account', this)">📊 الكشف</button>
-        <button onclick="show('finance', this)">💰 المرابيح</button>
-        <button onclick="show('marketing', this)">📢 تسويق</button>
-        <button onclick="show('settings', this)">⚙️ الإعدادات</button>
+        <button id="n-ev" onclick="show('events', this)">🎭 الحفلات</button>
+        <button id="n-tm" onclick="show('team', this)">👥 الفريق</button>
+        <button id="n-fin" onclick="show('finance', this)">💰 المرابيح</button>
+        <button id="n-set" onclick="show('settings', this)">⚙️ الإعدادات</button>
+        <button onclick="logout()" style="color:red;">🚪 خروج</button>
     </div>
 </header>
 
-<div id="home" class="section active">
-    <div id="dailyGreetingBannerContainer" style="margin-bottom: 20px;"></div>
-    
-    <div id="treasuryCard" style="margin-bottom: 25px;"></div>
-
-    <h2>حجوزات اليوم</h2>
-    <div id="todayEvents"></div>
-    <hr style="border: 0; border-top: 1px dashed #ccc; margin: 25px 0;">
-    <h2>طباعة برنامج الحفلات</h2>
-    <div class="card">
-        <p style="color: #555; font-size: 13px; margin-top: 0; margin-bottom: 15px;">استخراج جدول بمواعيد العمل للفريق.</p>
-        <label style="color: #666; font-size: 13px; margin-bottom: 5px; display: block; font-weight: bold;">من تاريخ:</label>
-        <input type="date" id="scheduleFrom">
-        <label style="color: #666; font-size: 13px; margin-bottom: 5px; display: block; font-weight: bold;">إلى تاريخ:</label>
-        <input type="date" id="scheduleTo">
-        <button class="red-btn" onclick="printSchedule()">🖨️ طباعة تواريخ الحفلات</button>
+<main id="mainAppContent" style="display:none;">
+    <div id="home" class="section active">
+        <div id="treasuryCard"></div>
+        <h2>حجوزات اليوم</h2>
+        <div id="todayEvents"></div>
     </div>
-</div>
 
-<div id="events" class="section">
-    <h2>كل الحفلات</h2>
-    <button class="red-btn" style="margin-bottom: 20px;" onclick="show('addEvent', document.querySelectorAll('.nav-buttons button')[1])">➕ إضافة حجز جديد</button>
-    <div id="eventList"></div>
-</div>
-
-<div id="addEvent" class="section">
-    <h2>إضافة حجز</h2>
-    <input type="text" id="name" placeholder="اسم المؤسسة">
-    <input type="tel" id="phone" dir="ltr" style="text-align: right;" placeholder="رقم الهاتف">
-    <input type="text" id="address" placeholder="العنوان">
-    <input type="date" id="date">
-    <input type="time" id="time">
-    <input type="number" id="price" placeholder="ثمن العرض الكلي">
-    <input type="number" id="advance" placeholder="التسبقة المقبوضة (إن وجدت)">
-    <button class="red-btn" onclick="addEvent()">حفظ الحجز</button>
-</div>
-
-<div id="editEventSection" class="section">
-    <h2>تحيين المعطيات</h2>
-    <input type="hidden" id="editIndex">
-    <input type="text" id="editName" disabled style="background-color: #e9ecef; color: #555;">
-    <input type="tel" id="editPhone" dir="ltr" style="text-align: right;" placeholder="رقم الهاتف">
-    <input type="text" id="editAddress" placeholder="العنوان">
-    <input type="date" id="editDate">
-    <input type="time" id="editTime">
-    <input type="number" id="editPrice" placeholder="ثمن العرض الكلي">
-    <button class="red-btn" onclick="saveEdit()">💾 حفظ التغييرات</button>
-    <button class="red-btn" style="background-color: #6c757d; margin-top: 10px;" onclick="show('institutions', document.querySelectorAll('.nav-buttons button')[2])">❌ رجوع</button>
-</div>
-
-<div id="expensesList" class="section">
-    <h2>المصاريف اللوجستية</h2>
-    <p style="color: #555; font-size: 14px; margin-top: 0; margin-bottom: 20px;">
-        اختر عرضاً من القائمة أدناه (تظهر العروض المنجزة فقط) لإضافة مصاريفه.
-    </p>
-    <div id="passedEventsList"></div>
-</div>
-
-<div id="expensesSection" class="section">
-    <h2>مصاريف العرض</h2>
-    <input type="hidden" id="expenseEventIndex">
-    <div class="card" style="background: #fff4f4; border-color: #E10600;">
-        <strong id="expenseEventName" style="color: #E10600;"></strong>
-        <div style="font-size: 13px; color: #666; margin-top: 5px;" id="expenseEventDate"></div>
+    <div id="events" class="section">
+        <button class="red-btn" onclick="show('addEvent')">➕ إضافة حجز جديد</button>
+        <div id="eventList" style="margin-top:20px;"></div>
     </div>
-    <div class="card">
-        <label style="color: #666; font-size: 13px; font-weight: bold;">إضافة مصروف جديد:</label>
-        <input type="text" id="expDesc" placeholder="اكتب نوع المصروف هنا (بنزين، كراء، فطور...)">
-        <input type="number" id="expAmount" placeholder="المبلغ (د.ت)">
-        <button class="action-btn btn-dark" style="width: 100%; padding: 10px;" onclick="addExpense()">➕ إضافة المصروف</button>
+
+    <div id="addEvent" class="section">
+        <h2>إضافة حجز</h2>
+        <input type="text" id="name" placeholder="اسم المؤسسة">
+        <input type="date" id="date">
+        <input type="number" id="price" placeholder="الثمن الكلي">
+        <button class="red-btn" onclick="addEvent()">حفظ</button>
     </div>
-    <h3 style="font-size: 16px; margin-top: 20px; color: var(--primary-red); border-bottom: 1px solid #ccc; padding-bottom: 5px;">قائمة مصاريف هذا العرض</h3>
-    <div id="eventExpensesList"></div>
-    <button class="red-btn" style="background-color: #6c757d; margin-top: 20px;" onclick="show('expensesList', document.querySelectorAll('.nav-buttons button')[4])">🔙 رجوع لقائمة العروض</button>
-</div>
 
-<div id="institutions" class="section">
-    <h2>قائمة المؤسسات والمالية</h2>
-    <div id="instList"></div>
-</div>
-
-<div id="team" class="section">
-    <h2>إدارة الفريق</h2>
-    <input type="text" id="empName" placeholder="اسم الموظف / العضو">
-    <input type="tel" id="empPhone" dir="ltr" style="text-align: right;" placeholder="رقم الهاتف (اختياري)">
-    <select id="empRole">
-        <option value="" disabled selected>-- اختر الصفة --</option>
-        <option>ممثل</option><option>تقني</option><option>أخرى</option>
-    </select>
-    <input type="number" id="empPrice" placeholder="المبلغ المستحق لكل عرض">
-    <button onclick="addEmployee()" class="red-btn">إضافة عضو</button>
-    <div id="teamList" style="margin-top: 20px;"></div>
-</div>
-
-<div id="editTeamSection" class="section">
-    <h2>تحيين معطيات الموظف</h2>
-    <input type="hidden" id="editEmpIndex">
-    <input type="text" id="editEmpNameInput" disabled style="background-color: #e9ecef; color: #555;">
-    <input type="tel" id="editEmpPhoneInput" dir="ltr" style="text-align: right;" placeholder="رقم الهاتف">
-    <select id="editEmpRoleInput"><option value="ممثل">ممثل</option><option value="تقني">تقني</option><option value="أخرى">أخرى</option></select>
-    <input type="number" id="editEmpPriceInput" placeholder="المبلغ المستحق لكل عرض">
-    <button class="red-btn" onclick="saveEditEmployee()">💾 حفظ التغييرات</button>
-    <button class="red-btn" style="background-color: #6c757d; margin-top: 10px;" onclick="show('team', document.querySelectorAll('.nav-buttons button')[3])">❌ رجوع</button>
-</div>
-
-<div id="pointageSection" class="section">
-    <h2>تسجيل غياب وتعويض</h2>
-    <input type="hidden" id="absentEmpIndex">
-    <input type="text" id="absentEmpName" disabled style="background-color: #fff4f4; color: var(--primary-red); font-weight:bold;">
-    <label style="color: #666; font-size: 13px;">اختر العرض الذي غاب عنه (من العروض المنجزة):</label>
-    <select id="absentEventSelect"></select>
-    <label style="color: #666; font-size: 13px;">عوّضه الموظف:</label>
-    <select id="replacementEmpSelect" onchange="toggleExtraFields()"></select>
-    <div id="extraFields" style="display: none; margin-top: 10px; padding: 15px; background: #fdfdfd; border: 1px dashed var(--primary-red);">
-        <input type="text" id="extraName" placeholder="اسم الموظف الخارجي (Extra)">
-        <input type="number" id="extraCost" placeholder="المبلغ المدفوع له">
+    <div id="team" class="section">
+        <input type="text" id="empName" placeholder="اسم الموظف">
+        <input type="number" id="empPrice" placeholder="السعر للعرض">
+        <button class="red-btn" onclick="addEmployee()">إضافة عضو</button>
+        <div id="teamList" style="margin-top: 20px;"></div>
     </div>
-    <button class="red-btn" onclick="saveAbsence()" style="margin-top: 15px;">💾 تأكيد العملية</button>
-    <button class="red-btn" style="background-color: #6c757d; margin-top: 10px;" onclick="show('team', document.querySelectorAll('.nav-buttons button')[3])">❌ إلغاء</button>
-</div>
 
-<div id="account" class="section">
-    <h2>تصدير كشف الحساب</h2>
-    <select id="empSelect"></select>
-    <label style="color: #666; font-size: 13px;">من تاريخ:</label>
-    <input type="date" id="from">
-    <label style="color: #666; font-size: 13px;">إلى تاريخ (اليوم فقط):</label>
-    <input type="date" id="to" readonly style="background-color: #e9ecef; color: #555;">
-    <button class="red-btn" onclick="exportAccount()">تصدير الكشف (صورة)</button>
-</div>
+    <div id="finance" class="section">
+        <button class="red-btn" onclick="viewFinance()">📊 احتساب المرابيح</button>
+        <button class="red-btn" style="background:#333; margin-top:10px;" onclick="exportFinance()">🖨️ طباعة التقرير كصورة</button>
+        <div id="financeResult" style="margin-top:20px;"></div>
+    </div>
 
-<div id="finance" class="section">
-    <h2>التقرير المالي والمرابيح</h2>
-    <label style="color: #666; font-size: 13px;">من تاريخ:</label>
-    <input type="date" id="financeFrom">
-    <label style="color: #666; font-size: 13px;">إلى تاريخ:</label>
-    <input type="date" id="financeTo">
-    <div style="display: flex; gap: 10px;">
-        <button class="red-btn" style="background-color: #333;" onclick="viewFinance()">📊 احتساب وعرض</button>
-        <button class="red-btn" onclick="exportFinance()">🖨️ طباعة التقرير</button>
+    <div id="settings" class="section">
+        <div id="adminArea" style="display:none;">
+            <div class="card" style="border-color:#198754; background:#f4fff9;">
+                <h3 style="color:#198754; margin-top:0;">⚡ استعادة البيانات</h3>
+                <button class="red-btn" style="background:#198754;" onclick="manualRecovery()">🔄 مزامنة بيانات التليفون مع السحابة</button>
+            </div>
+        </div>
     </div>
-    <div id="financeResult" style="margin-top: 25px;"></div>
-</div>
-
-<div id="marketing" class="section">
-    <h2>تصميم إشهار العروض</h2>
-    <div class="card">
-        <input type="text" id="promoTitle" placeholder="عنوان العرض / الحدث (مثال: مسرحية...)">
-        <textarea id="promoDesc" rows="4" placeholder="اكتب تفاصيل العرض..."></textarea>
-        <label style="color: #666; font-size: 13px;">فترة العروض من:</label>
-        <input type="date" id="promoStart">
-        <label style="color: #666; font-size: 13px;">إلى:</label>
-        <input type="date" id="promoEnd">
-        <input type="tel" id="promoPhone" dir="ltr" style="text-align: right;" placeholder="رقم الهاتف للحجز">
-        <label style="color: #666; font-size: 13px;">إدراج صورة (اختياري):</label>
-        <input type="file" id="promoImage" accept="image/*" style="padding: 10px; background: #fff; border: 1px dashed #ccc;">
-        <button class="red-btn" style="margin-top: 15px;" onclick="exportPromo()">📸 إنشاء وعرض صورة الإشهار</button>
-    </div>
-</div>
-
-<div id="settings" class="section">
-    <h2>الإعدادات والنسخ الاحتياطي</h2>
-    <div class="card">
-        <h3 style="margin-top: 0; color: var(--dark-text); font-size: 16px;">شعار الشركة (Logo)</h3>
-        <p style="color: #555; font-size: 13px; margin-bottom: 10px;">قم برفع الشعار ليظهر في التطبيق والمطبوعات.</p>
-        <input type="file" id="logoInput" accept="image/*" style="display: none;" onchange="uploadLogo(event)">
-        <button class="action-btn btn-outline" style="width: 100%; padding: 12px; margin-bottom: 10px;" onclick="document.getElementById('logoInput').click()">🖼️ رفع/تغيير الشعار</button>
-        <button class="action-btn btn-dark" style="width: 100%; padding: 12px;" onclick="removeLogo()">🗑️ حذف الشعار</button>
-    </div>
-    <div class="card">
-        <h3 style="margin-top: 0; color: var(--dark-text); font-size: 16px;">النسخ الاحتياطي (Backup)</h3>
-        <button class="red-btn" onclick="exportDataBackup()" style="margin-bottom: 15px;">⬇️ تنزيل نسخة احتياطية</button>
-        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importDataBackup(event)">
-        <button class="action-btn btn-dark" style="width: 100%; padding: 12px;" onclick="document.getElementById('importFile').click()">⬆️ رفع ملف الاسترجاع (Restore)</button>
-    </div>
-</div>
+</main>
 
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error', err));
-  });
-}
+const firebaseConfig = {
+    apiKey: "AIzaSyCTTjp34QhF6MPNemwKhoq7385xnJKK_Hg",
+    authDomain: "becha-events-kids.firebaseapp.com",
+    databaseURL: "https://becha-events-kids-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "becha-events-kids",
+    storageBucket: "becha-events-kids.firebasestorage.app",
+    messagingSenderId: "763935242130",
+    appId: "1:763935242130:web:490a99e38c53ba0240f34b"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-function loadLogo() {
-    let logoData = localStorage.getItem('companyLogo');
-    let headerLogo = document.getElementById('mainHeaderLogo');
-    let headerText = document.getElementById('mainHeaderText');
-    
-    if (logoData) {
-        headerLogo.src = logoData;
-        headerLogo.style.display = 'block';
-    } else {
-        headerLogo.style.display = 'none';
+let eventsData = [], teamData = [], usersData = {}, currentUser = null;
+
+function attemptLogin() {
+    let u = document.getElementById('loginUser').value, p = document.getElementById('loginPass').value;
+    if (u === "حمادي" && p === "amouhfy2025") {
+        let hUser = { pseudo: "حمادي", pass: "amouhfy2025", role: "superadmin" };
+        loginSuccess(hUser); 
+        autoSyncLegacyData(); // محاولة استرجاع البيانات تلقائياً
+        return;
     }
-    headerText.style.display = 'block';
+    alert("بيانات خاطئة!");
 }
 
-function uploadLogo(event) {
-    let file = event.target.files[0];
-    if (!file) return;
-    let reader = new FileReader();
-    reader.onload = function(e) {
-        localStorage.setItem('companyLogo', e.target.result);
-        loadLogo(); alert("تم تحديث الشعار بنجاح ✔"); render(); 
-    };
-    reader.readAsDataURL(file);
+function loginSuccess(user) {
+    currentUser = user; localStorage.setItem('bechaSession', JSON.stringify(user));
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('mainAppHeader').style.display = 'block';
+    document.getElementById('mainAppContent').style.display = 'block';
+    if(user.role !== 'utilisateur') document.getElementById('adminArea').style.display = 'block';
+    startLiveSync();
 }
 
-function removeLogo() {
-    if(confirm("هل أنت متأكد أنك تريد حذف الشعار؟")) {
-        localStorage.removeItem('companyLogo'); loadLogo(); render();
-    }
-}
-
-function getLogoHTMLForPrint(maxHeight = "80px", marginBottom = "10px") {
-    let logoData = localStorage.getItem('companyLogo');
-    let textHtml = `<div style="color: #E10600; margin: 0; font-size: 32px; font-weight: 900; letter-spacing: 2px; direction: ltr;">BECHA EVENTS</div>`;
-    if (logoData) {
-        return `<div style="text-align: center; margin-bottom: ${marginBottom};"><img src="${logoData}" style="max-height: ${maxHeight}; border-radius: 8px; margin-bottom: 5px;">${textHtml}</div>`;
-    } else {
-        return `<div style="text-align: center; margin-bottom: ${marginBottom};">${textHtml}</div>`;
-    }
-}
-
-function captureAndShow(divId, fileName) {
-    let div = document.getElementById(divId);
-    if(!div) return;
-    
-    div.style.position = 'fixed';
-    div.style.top = '0';
-    div.style.left = '0';
-    div.style.zIndex = '-9999';
-    div.style.opacity = '1';
-
-    setTimeout(() => {
-        html2canvas(div, { 
-            scale: 2, 
-            useCORS: true, 
-            backgroundColor: '#ffffff'
-        }).then(canvas => {
-            document.getElementById('resultImage').src = canvas.toDataURL("image/png");
-            document.getElementById('imageModal').style.display = 'flex';
-            div.remove();
-        }).catch(err => {
-            console.error('Error:', error); alert("حدث خطأ أثناء التقاط الصورة. الرجاء المحاولة مرة أخرى."); div.remove();
-        });
-    }, 600); 
-}
-
-function closeImageModal() { document.getElementById('imageModal').style.display = 'none'; }
-
-function isEventPassed(dateStr, timeStr) {
-    if (!dateStr) return false;
-    let now = new Date(); let time = timeStr ? timeStr : "23:59"; 
-    let eventDateTime = new Date(`${dateStr}T${time}`); return now >= eventDateTime;
-}
-
-function renderDailyGreeting() {
-    let bannerDivContainer = document.getElementById('dailyGreetingBannerContainer');
-    if (!bannerDivContainer) return;
-    let today = new Date(); let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
-    let tMonth = tomorrow.getMonth() + 1; let tDay = tomorrow.getDate();
-    let holidays = [
-        { m: 1, d: 1, name: "رأس السنة الإدارية" }, { m: 3, d: 20, name: "عيد الإستقلال" }, { m: 4, d: 9, name: "عيد الشهداء" },
-        { m: 5, d: 1, name: "عيد الشغل" }, { m: 7, d: 25, name: "عيد الجمهورية" }, { m: 8, d: 13, name: "العيد الوطني للمرأة" },
-        { m: 10, d: 15, name: "عيد الجلاء" }, { m: 12, d: 17, name: "عيد الثورة" }, { m: 3, d: 8, name: "اليوم العالمي للمرأة" },
-        { m: 6, d: 1, name: "اليوم العالمي للطفل" }, { m: 3, d: 20, name: "عيد الفطر المبارك" }, { m: 5, d: 27, name: "عيد الإضحى المبارك" }, { m: 8, d: 26, name: "المولد النبوي الشريف" }
-    ];
-    let upcomingHoliday = holidays.find(h => h.m === tMonth && h.d === tDay);
-    let currentHour = today.getHours();
-    let logoHtml = getLogoHTMLForPrint("70px", "10px");
-    let innerContent = '';
-
-    if (upcomingHoliday) {
-        innerContent = `<div id="captureGreeting" style="background: #ffffff; color: #333; padding: 30px 20px; border-radius: 12px; text-align: center; border: 3px solid #E10600; width: 800px; box-sizing: border-box;">${logoHtml}<p style="font-size: 20px; margin: 10px 0 0 0; color: #555; font-weight: 600;">تتمنى لكم عيداً سعيداً غداً بمناسبة</p><p style="font-size: 28px; font-weight: 900; margin: 5px 0 0 0; color: #E10600;">${upcomingHoliday.name}</p></div>`;
-    } else {
-        let isMorning = currentHour >= 5 && currentHour < 12;
-        let greetingText = isMorning ? "صباح الخير والنشاط ☀️" : "مساء الخير والنجاح 🌙";
-        innerContent = `<div id="captureGreeting" style="background: #ffffff; color: #333; padding: 30px 20px; border-radius: 12px; text-align: center; border: 3px solid #E10600; width: 800px; box-sizing: border-box;">${logoHtml}<p style="font-size: 26px; margin: 10px 0 0 0; font-weight: 800; color: #E10600;">${greetingText}</p><p style="font-size: 16px; margin: 10px 0 0 0; color: #666; font-weight: 600;">يوم عمل موفق ومثمر!</p></div>`;
-    }
-    
-    let displayContent = innerContent.replace('width: 800px;', 'width: 100%;').replace('id="captureGreeting"', '');
-    bannerDivContainer.innerHTML = `${displayContent}<button class="action-btn btn-outline" style="width: 100%; margin-top: 15px; padding: 10px;" onclick="exportGreeting()">📸 حفظ صورة التحية (Story)</button>`;
-    
-    let hiddenCapture = document.createElement('div');
-    hiddenCapture.innerHTML = innerContent;
-    hiddenCapture.id = 'actualCaptureGreetingContainer';
-    hiddenCapture.style.display = 'none';
-    document.body.appendChild(hiddenCapture);
-}
-
-function exportGreeting() {
-    let originalDiv = document.getElementById('captureGreeting'); if(!originalDiv) return;
-    let div = originalDiv.cloneNode(true); 
-    div.id = 'tempCaptureGreeting'; 
-    document.body.appendChild(div); 
-    captureAndShow('tempCaptureGreeting', 'greeting');
-}
-
-function updateClock() {
-    let now = new Date(); let days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']; let dayName = days[now.getDay()]; let timeString = now.toLocaleTimeString('ar-TN', { hour: '2-digit', minute: '2-digit' }); document.getElementById('live-clock').innerHTML = `🕒 ${timeString} | ${dayName}`;
-}
-setInterval(updateClock, 1000); updateClock(); 
-
-function getFormattedPrintTime() {
-    let dObj = new Date(); let daysArr = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']; let dayNameStr = daysArr[dObj.getDay()]; let timeStr = dObj.toLocaleTimeString('ar-TN', { hour: '2-digit', minute: '2-digit' }); let dateStr = dObj.toLocaleDateString('ar-TN'); return `${dayNameStr} ${dateStr} | ${timeStr}`;
-}
-
-window.onload = function() { loadLogo(); };
-
-let eventsData = JSON.parse(localStorage.getItem('eventsData') || '[]'); 
-eventsData.forEach(e => { 
-    if(!e.expenses) e.expenses = []; 
-    if(e.collected === undefined) e.collected = false;
-});
-let teamData = JSON.parse(localStorage.getItem('teamData') || '[]');
-
-function show(id, btnElement) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active');
-    if (btnElement) { document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active-nav')); btnElement.classList.add('active-nav'); }
-    render();
-}
-
-function triggerAutoBackup(successMessage) {
-    let backupData = { events: eventsData, team: teamData };
-    localStorage.setItem('eventsData', JSON.stringify(eventsData));
-    localStorage.setItem('teamData', JSON.stringify(teamData));
-    if (successMessage) alert(successMessage);
-    render();
-}
-
-function addEvent() {
-    let date = document.getElementById('date').value; let time = document.getElementById('time').value; let name = document.getElementById('name').value;
-    if(!name || !date) { alert("الرجاء إدخال اسم المؤسسة والتاريخ على الأقل."); return; }
-    let conflict = eventsData.find(e => e.date === date && e.time === time);
-    if (conflict && time !== "") { if (!confirm("⚠ نفس التوقيت محجوز من " + conflict.name + "\nهل تريد المتابعة؟")) return; }
-    let advance = parseFloat(document.getElementById('advance').value) || 0; let now = new Date().toLocaleString('ar-TN');
-    let notes = advance > 0 ? `تسبقة مقبوضة للمؤسسة ${advance} د.ت - ${now}` : '';
-    
-    eventsData.push({ name: name, phone: document.getElementById('phone').value, address: document.getElementById('address').value, date: date, time: time, price: parseFloat(document.getElementById('price').value) || 0, advance: advance, notes: notes, expenses: [], collected: false });
-    
-    document.getElementById('name').value = ''; document.getElementById('phone').value = ''; document.getElementById('address').value = ''; document.getElementById('price').value = ''; document.getElementById('advance').value = ''; document.getElementById('date').value = ''; document.getElementById('time').value = ''; 
-    show('events', document.querySelectorAll('.nav-buttons button')[1]); triggerAutoBackup("تم حفظ الحجز بنجاح ✔"); 
-}
-
-function editInst(i) {
-    let e = eventsData[i]; document.getElementById('editIndex').value = i; document.getElementById('editName').value = e.name; document.getElementById('editPhone').value = e.phone || ''; document.getElementById('editAddress').value = e.address || ''; document.getElementById('editDate').value = e.date || ''; document.getElementById('editTime').value = e.time || ''; document.getElementById('editPrice').value = e.price || ''; show('editEventSection');
-}
-
-function saveEdit() {
-    let i = document.getElementById('editIndex').value; let e = eventsData[i]; let newDate = document.getElementById('editDate').value;
-    e.phone = document.getElementById('editPhone').value; e.address = document.getElementById('editAddress').value; e.date = newDate; e.time = document.getElementById('editTime').value; e.price = parseFloat(document.getElementById('editPrice').value) || 0;
-    show('institutions', document.querySelectorAll('.nav-buttons button')[2]); triggerAutoBackup("تم التحيين بنجاح ✔"); 
-}
-
-function toggleEventPayment(i) {
-    let e = eventsData[i];
-    e.collected = !e.collected;
-    let msg = e.collected ? "تم تسجيل قبض باقي المبلغ بنجاح ووضعه في الصندوق 💰" : "تم إلغاء قبض المبلغ من الصندوق.";
-    triggerAutoBackup(msg);
-}
-
-function openExpenses(originalIndex) {
-    let e = eventsData[originalIndex];
-    document.getElementById('expenseEventIndex').value = originalIndex;
-    document.getElementById('expenseEventName').innerText = e.name;
-    document.getElementById('expenseEventDate').innerText = `📅 ${e.date} | 🕒 ${e.time || '--'}`;
-    renderExpensesList(originalIndex);
-    show('expensesSection');
-}
-
-function addExpense() {
-    let i = document.getElementById('expenseEventIndex').value;
-    let desc = document.getElementById('expDesc').value;
-    let amount = parseFloat(document.getElementById('expAmount').value);
-
-    if(!desc || isNaN(amount) || amount <= 0) { alert("الرجاء إدخال نوع المصروف والمبلغ بشكل صحيح."); return; }
-
-    if(!eventsData[i].expenses) eventsData[i].expenses = [];
-    eventsData[i].expenses.push({ desc: desc, amount: amount });
-    
-    document.getElementById('expDesc').value = ''; document.getElementById('expAmount').value = '';
-    triggerAutoBackup(); 
-    renderExpensesList(i);
-}
-
-function deleteExpense(eventIndex, expIndex) {
-    if(confirm("هل أنت متأكد من حذف هذا المصروف؟")) {
-        eventsData[eventIndex].expenses.splice(expIndex, 1);
-        triggerAutoBackup();
-        renderExpensesList(eventIndex);
-    }
-}
-
-function renderExpensesList(i) {
-    let listDiv = document.getElementById('eventExpensesList');
-    listDiv.innerHTML = '';
-    let expenses = eventsData[i].expenses || [];
-    let total = 0;
-
-    if(expenses.length === 0) {
-        listDiv.innerHTML = '<div style="text-align:center; color:#888; padding:15px;">لا توجد مصاريف مسجلة لهذا العرض</div>';
-    } else {
-        expenses.forEach((exp, idx) => {
-            total += exp.amount;
-            listDiv.innerHTML += `
-            <div class="expense-item">
-                <div>
-                    <strong style="color:#333;">${exp.desc}</strong><br>
-                    <span style="color:var(--primary-red); font-weight:bold;">${exp.amount} د.ت</span>
-                </div>
-                <button class="action-btn btn-red" style="flex:none; min-width:40px; padding:5px 8px;" onclick="deleteExpense(${i}, ${idx})">🗑</button>
-            </div>`;
-        });
-        listDiv.innerHTML += `
-        <div style="background: #333; color: #fff; padding: 12px; border-radius: 8px; margin-top: 15px; display: flex; justify-content: space-between; font-weight: bold; font-size: 16px;">
-            <span>مجموع المصاريف:</span>
-            <span>${total} د.ت</span>
-        </div>`;
-    }
-}
-
-function editEmployee(i) {
-    let emp = teamData[i]; document.getElementById('editEmpIndex').value = i; document.getElementById('editEmpNameInput').value = emp.name; document.getElementById('editEmpPhoneInput').value = emp.phone || ''; document.getElementById('editEmpRoleInput').value = emp.role || 'ممثل'; document.getElementById('editEmpPriceInput').value = emp.price || 0; show('editTeamSection');
-}
-
-function saveEditEmployee() {
-    let i = document.getElementById('editEmpIndex').value; let emp = teamData[i];
-    emp.phone = document.getElementById('editEmpPhoneInput').value; emp.role = document.getElementById('editEmpRoleInput').value; emp.price = parseFloat(document.getElementById('editEmpPriceInput').value) || 0;
-    show('team', document.querySelectorAll('.nav-buttons button')[3]); triggerAutoBackup("تم تحيين معطيات الموظف بنجاح ✔");
-}
-
-// 🟢 دالة حساب السيولة (الكاسة) وتوليد الصورة 🟢
-function renderTreasury() {
-    let totalIncome = 0;
-    let totalTeamPayments = 0;
-    let totalExpenses = 0;
-
-    eventsData.forEach(e => {
-        if (e.collected) {
-            totalIncome += (parseFloat(e.price) || 0);
-        } else {
-            totalIncome += (parseFloat(e.advance) || 0);
-        }
-        if (e.expenses) {
-            e.expenses.forEach(exp => totalExpenses += (parseFloat(exp.amount) || 0));
+function startLiveSync() {
+    db.ref('BechaEventsData').on('value', snap => {
+        const data = snap.val();
+        if (data) {
+            eventsData = data.events || [];
+            teamData = data.team || [];
+            document.getElementById('syncDot').classList.add('sync-pulse');
+            setTimeout(() => document.getElementById('syncDot').classList.remove('sync-pulse'), 1000);
+            render();
         }
     });
-
-    teamData.forEach(emp => {
-        if (emp.payments) {
-            emp.payments.forEach(p => totalTeamPayments += (parseFloat(p.amount) || 0));
-        }
-    });
-
-    let currentCash = totalIncome - totalExpenses - totalTeamPayments;
-
-    let treasuryDiv = document.getElementById('treasuryCard');
-    if(treasuryDiv) {
-        treasuryDiv.innerHTML = `
-            <div style="background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 2px solid var(--primary-red);">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #ccc; padding-bottom: 15px; margin-bottom: 15px;">
-                    <div>
-                        <div style="font-size: 15px; color: #555; font-weight: bold; margin-bottom: 5px;">السيولة الحالية (الكاسة)</div>
-                        <div style="font-size: 32px; font-weight: 900; color: ${currentCash >= 0 ? '#198754' : '#E10600'}; letter-spacing: 1px;">${currentCash} <span style="font-size:18px;">د.ت</span></div>
-                    </div>
-                    <div style="font-size: 40px; opacity: 0.9;">💵</div>
-                </div>
-                <div style="font-size: 14px; color: #666; margin-bottom: 5px; display:flex; justify-content:space-between;">
-                    <span>إجمالي المقبوضات:</span> <strong style="color: #198754;">+ ${totalIncome} د.ت</strong>
-                </div>
-                <div style="font-size: 14px; color: #666; margin-bottom: 5px; display:flex; justify-content:space-between;">
-                    <span>خلاص وتسبقة الفريق:</span> <strong style="color: #E10600;">- ${totalTeamPayments} د.ت</strong>
-                </div>
-                <div style="font-size: 14px; color: #666; margin-bottom: 15px; display:flex; justify-content:space-between;">
-                    <span>المصاريف اللوجستية:</span> <strong style="color: #E10600;">- ${totalExpenses} د.ت</strong>
-                </div>
-                <button class="action-btn btn-outline" style="width: 100%; padding: 10px;" onclick="exportTreasury()">🖨️ طباعة كشف الصندوق (للحفظ)</button>
-            </div>
-        `;
-    }
 }
 
-function exportTreasury() {
-    let totalIncome = 0; let totalTeamPayments = 0; let totalExpenses = 0;
-
-    eventsData.forEach(e => {
-        if (e.collected) totalIncome += (parseFloat(e.price) || 0);
-        else totalIncome += (parseFloat(e.advance) || 0);
-        if (e.expenses) e.expenses.forEach(exp => totalExpenses += (parseFloat(exp.amount) || 0));
+function autoSyncLegacyData() {
+    db.ref('BechaEventsData/events').once('value').then(snap => {
+        if (!snap.exists()) {
+            let localE = JSON.parse(localStorage.getItem('eventsData') || '[]');
+            let localT = JSON.parse(localStorage.getItem('teamData') || '[]');
+            if(localE.length > 0) db.ref('BechaEventsData').update({ events: localE, team: localT });
+        }
     });
+}
 
-    teamData.forEach(emp => {
-        if (emp.payments) emp.payments.forEach(p => totalTeamPayments += (parseFloat(p.amount) || 0));
-    });
-
-    let currentCash = totalIncome - totalExpenses - totalTeamPayments;
-
-    let div = document.createElement('div');
-    div.id = 'tempExportTreasury';
-    div.style.position = 'fixed'; div.style.top = '0'; div.style.left = '0'; div.style.zIndex = '-9999'; div.style.width = '800px'; div.style.padding = '40px'; div.style.background = '#fff'; div.style.direction = 'rtl'; div.style.fontFamily = 'Cairo, sans-serif'; div.style.color = '#333';
-
-    div.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #E10600; padding-bottom: 15px; margin-bottom: 20px;">
-        <div style="text-align: right;">
-            <div style="color: #555; font-weight: bold; font-size: 16px; margin-bottom: 5px;">تاريخ الطباعة:</div>
-            <div style="color: #E10600; font-size: 15px; font-weight: bold; direction: ltr; display: inline-block;">${getFormattedPrintTime()}</div>
-        </div>
-        ${getLogoHTMLForPrint("70px", "0px")}
-    </div>
-    <h2 style="text-align:center; margin-top: 10px; color: #E10600; font-size: 30px;">كشف السيولة المالية (حالة الصندوق)</h2>
-    <div style="background: #f9fdfc; border: 2px solid #ddd; border-radius: 15px; padding: 30px; margin-top: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-        <div style="display: flex; justify-content: space-between; font-size: 22px; margin-bottom: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 15px;">
-            <span>إجمالي المداخيل المقبوضة (المؤسسات + التسبيقات):</span><strong style="color: #198754;">+ ${totalIncome} د.ت</strong>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 22px; margin-bottom: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 15px;">
-            <span>إجمالي المصاريف اللوجستية (بنزين، أكل...):</span><strong style="color: #E10600;">- ${totalExpenses} د.ت</strong>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 22px; margin-bottom: 25px; border-bottom: 1px dashed #ccc; padding-bottom: 15px;">
-            <span>إجمالي خروجيات الفريق (تسبيقات وخلاص):</span><strong style="color: #E10600;">- ${totalTeamPayments} د.ت</strong>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 32px; font-weight: 900; margin-top: 30px; background: #fff; padding: 20px; border-radius: 10px; border: 3px dashed ${currentCash >= 0 ? '#198754' : '#E10600'};">
-            <span>السيولة الحالية المتوفرة في الصندوق:</span><span style="color: ${currentCash >= 0 ? '#198754' : '#E10600'};">${currentCash} د.ت</span>
-        </div>
-    </div>
-    `;
-    
-    document.body.appendChild(div);
-    captureAndShow('tempExportTreasury', 'كشف_الصندوق');
+function manualRecovery() {
+    let localE = JSON.parse(localStorage.getItem('eventsData') || '[]');
+    let localT = JSON.parse(localStorage.getItem('teamData') || '[]');
+    db.ref('BechaEventsData').update({ events: localE, team: localT }).then(() => alert("تمت المزامنة بنجاح! ✅"));
 }
 
 function render() {
-    renderDailyGreeting();
-    
-    let todayIso = new Date().toISOString().slice(0, 10);
-    let toInput = document.getElementById('to'); if(toInput) { toInput.value = todayIso; }
-    let fromInput = document.getElementById('from'); if(fromInput) { fromInput.max = todayIso; }
-
-    let todayList = eventsData.filter(e => e.date === todayIso);
-    let todayDiv = document.getElementById('todayEvents'); todayDiv.innerHTML = '';
-    if (todayList.length === 0) { todayDiv.innerHTML = "<div class='card' style='text-align: center; color: #777; border-color: #ddd;'>لا توجد حجوزات لليوم 🎈</div>"; } 
-    else { todayList.forEach(e => { todayDiv.innerHTML += `<div class="card"><strong>${e.name}</strong><br>🕒 ${e.time || 'غير محدد'} | 📍 ${e.address || 'غير محدد'}</div>`; }); }
-
-    let eventListDiv = document.getElementById('eventList');
-    if (eventListDiv) {
-        eventListDiv.innerHTML = '';
-        let sortedEvents = [...eventsData].sort((a,b) => new Date(b.date) - new Date(a.date));
-        if(sortedEvents.length === 0) eventListDiv.innerHTML = "<p style='text-align: center; color: #777;'>القائمة فارغة</p>";
-        sortedEvents.forEach(e => { eventListDiv.innerHTML += `<div class="card"><strong>${e.name}</strong><br>📅 ${e.date} | 🕒 ${e.time || '--'}<br>💰 الثمن: <span style="font-weight:bold;">${e.price} د.ت</span>${e.advance > 0 ? `<br><span style='color:#E10600; font-size:14px;'>(${e.notes})</span>` : ''}</div>`; });
+    let today = new Date().toISOString().slice(0, 10);
+    let todayDiv = document.getElementById('todayEvents');
+    if(todayDiv) {
+        let list = eventsData.filter(e => e.date === today);
+        todayDiv.innerHTML = list.length ? '' : "لا توجد حفلات اليوم.";
+        list.forEach(e => { todayDiv.innerHTML += `<div class="card"><strong>${e.name}</strong><br>📅 ${e.date}</div>`; });
     }
-
-    let instDiv = document.getElementById('instList');
-    if (instDiv) {
-        instDiv.innerHTML = '';
-        if(eventsData.length === 0) instDiv.innerHTML = "<p style='text-align: center; color: #777;'>القائمة فارغة</p>";
-        eventsData.forEach((e, i) => { 
-            let phoneHtml = e.phone ? `<a href="tel:${e.phone}" class="phone-link">📞 ${e.phone}</a>` : '<span style="color:#888; font-size:14px;">لا يوجد رقم</span>';
-            
-            let paymentStatusBtn = e.collected ? 
-                `<button class="action-btn btn-dark" onclick="toggleEventPayment(${i})">↩️ إلغاء الخلاص</button>` : 
-                `<button class="action-btn btn-green" onclick="toggleEventPayment(${i})">💰 قبض باقي العرض</button>`;
-            
-            let paymentBadge = e.collected ? `<span style="background:#198754; color:#fff; font-size:12px; padding:3px 8px; border-radius:6px; float:left;">✅ خالص للمؤسسة</span>` : '';
-
-            instDiv.innerHTML += `
-            <div class="card" style="border-color: ${e.collected ? '#198754' : 'var(--primary-red)'}">
-                <strong>${e.name}</strong> ${paymentBadge}<br>
-                ${phoneHtml}<br>📍 <span style="color:#555;">${e.address || 'لا يوجد'}</span>
-                <div style="font-size:14px; margin-top:8px; color:#333; background: #f4f4f4; padding: 8px; border-radius: 5px;">
-                    💰 الثمن الكلي: <strong>${e.price} د.ت</strong> ${e.advance > 0 ? `<br>💵 التسبقة المقبوضة: <strong>${e.advance} د.ت</strong>` : ''}
-                </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px;">
-                    <button class="action-btn btn-outline" onclick="editInst(${i})">✏️ تحيين</button>
-                    ${paymentStatusBtn}
-                    <button class="action-btn btn-red" onclick="deleteInst(${i})">🗑 حذف</button>
-                </div>
-            </div>`; 
-        });
-    }
-
-    let teamListDiv = document.getElementById('teamList');
-    if (teamListDiv) {
-        teamListDiv.innerHTML = '';
-        teamData.forEach((employee, i) => {
-            if(!employee.payments) employee.payments = []; if(!employee.absences) employee.absences = []; if(!employee.replacements) employee.replacements = []; 
-            let passedEvents = eventsData.filter(e => isEventPassed(e.date, e.time));
-            let actualWorkedEvents = passedEvents.filter(e => !employee.absences.some(a => a.date === e.date && a.name === e.name));
-            let passedReplacements = employee.replacements.filter(r => { let origEvent = eventsData.find(e => e.date === r.date && e.name === r.name); return isEventPassed(r.date, origEvent ? origEvent.time : ""); });
-            let totalEarned = (actualWorkedEvents.length + passedReplacements.length) * employee.price;
-            let totalPaid = employee.payments.reduce((sum, p) => sum + p.amount, 0); let remaining = totalEarned - totalPaid;
-            let phoneHtml = employee.phone ? `<a href="tel:${employee.phone}" class="phone-link" style="font-size:15px; margin-top:5px;">📞 ${employee.phone}</a>` : '<div style="color:#888; font-size:13px; margin-top:5px;">بدون رقم هاتف</div>';
-
-            teamListDiv.innerHTML += `
-            <div class="card">
-                <strong>${employee.name}</strong> <span style="color:#666; font-size:14px;">(🎭 ${employee.role})</span><br>
-                ${phoneHtml}
-                <div style="font-size: 13px; color: #888; margin-top: 8px; margin-bottom: 5px;">(يتم احتساب العروض المنجزة فقط)</div>
-                <div style="color: #333; font-weight: bold;">💵 السعر للعرض: ${employee.price} د.ت</div>
-                <div class="stats-box">
-                    <div style="display:flex; justify-content:space-between;"><span>عروض منجزة: <strong>${actualWorkedEvents.length}</strong></span> <span>غيابات: <strong style="color:#E10600;">${employee.absences.length}</strong></span></div>
-                    <div style="margin-top:5px; color:#007bff; font-weight:bold;">تعويضات منجزة: ${passedReplacements.length}</div>
-                    <hr style="border:0; border-top:1px solid #ddd; margin:8px 0;">
-                    <div style="display:flex; justify-content:space-between;"><span>المستحقات:</span> <strong>${totalEarned} د.ت</strong></div>
-                    <div style="display:flex; justify-content:space-between; margin-top:3px;"><span>المدفوعات:</span> <strong style="color: #198754;">${totalPaid} د.ت</strong></div>
-                    <div style="display:flex; justify-content:space-between; margin-top: 8px; font-size: 16px; border-top: 1px dashed #ccc; padding-top: 8px;"><span>الباقي في الذمة:</span> <strong style="color: ${remaining > 0 ? '#E10600' : '#333'};">${remaining} د.ت</strong></div>
-                </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
-                    <button class="action-btn btn-outline" onclick="editEmployee(${i})">✏️ تحيين</button>
-                    <button class="action-btn btn-dark" onclick="openPointage(${i})">📅 غياب/تعويض</button>
-                    <button class="action-btn btn-outline" onclick="giveAdvance(${i})">💵 تسبقة</button>
-                    <button class="action-btn btn-green" onclick="payFull(${i})">✅ خالص</button>
-                    <button class="action-btn btn-red" onclick="deleteEmployee(${i})">🗑 حذف</button>
-                </div>
-            </div>`;
-        });
-    }
-
-    let passedEventsListDiv = document.getElementById('passedEventsList');
-    if (passedEventsListDiv) {
-        passedEventsListDiv.innerHTML = '';
-        let passedEvents = eventsData.map((e, index) => ({...e, originalIndex: index})).filter(e => isEventPassed(e.date, e.time)).sort((a,b) => new Date(b.date) - new Date(a.date));
-        if(passedEvents.length === 0) {
-            passedEventsListDiv.innerHTML = "<p style='text-align: center; color: #777;'>لا توجد عروض منجزة حالياً</p>";
-        } else {
-            passedEvents.forEach(e => {
-                let expTotal = (e.expenses || []).reduce((s, x) => s + x.amount, 0);
-                let expBadge = expTotal > 0 ? `<span style="background:var(--primary-red); color:#fff; font-size:12px; padding:2px 8px; border-radius:6px; float:left;">صرفنا: ${expTotal} د.ت</span>` : '';
-                passedEventsListDiv.innerHTML += `
-                <div class="card" style="cursor: pointer; border-color: ${expTotal > 0 ? 'var(--primary-red)' : '#ccc'}; transition: 0.3s;" onclick="openExpenses(${e.originalIndex})">
-                    <strong>${e.name}</strong> ${expBadge}<br>
-                    📅 ${e.date} | 🕒 ${e.time || '--'}<br>
-                    💰 مداخيل العرض: <span style="font-weight:bold; color:#198754;">${e.price} د.ت</span>
-                </div>`;
-            });
-        }
-    }
-
-    let sel = document.getElementById('empSelect');
-    if (sel) { sel.innerHTML = '<option value="" disabled selected>-- اختر الموظف --</option>'; teamData.forEach((employee, i) => { sel.innerHTML += `<option value="${i}">${employee.name}</option>`; }); }
-    
-    renderTreasury(); // تحديث صندوق السيولة
-}
-
-function printSchedule() {
-    let fromDate = document.getElementById('scheduleFrom').value; let toDate = document.getElementById('scheduleTo').value;
-    if (!fromDate || !toDate) { alert("الرجاء اختيار الفترة (من وإلى) أولاً."); return; }
-    let filteredEvents = eventsData.filter(e => e.date >= fromDate && e.date <= toDate);
-    filteredEvents.sort((a, b) => { if (a.date === b.date) { return (a.time || "00:00").localeCompare(b.time || "00:00"); } return new Date(a.date) - new Date(b.date); });
-
-    let div = document.createElement('div'); div.id = 'tempPrintSchedule'; div.style.position = 'fixed'; div.style.top = '0'; div.style.left = '0'; div.style.zIndex = '-9999'; div.style.width = '800px'; div.style.padding = '40px'; div.style.background = '#fff'; div.style.direction = 'rtl'; div.style.fontFamily = 'Cairo, sans-serif'; div.style.color = '#333';
-    let tableHTML = `<table style="width: 100%; border-collapse: collapse; font-size: 16px; margin-top: 20px;" border="1"><thead><tr style="background-color: #f4f4f4;"><th style="padding: 12px; border: 1px solid #ddd;">التاريخ</th><th style="padding: 12px; border: 1px solid #ddd;">الوقت</th><th style="padding: 12px; border: 1px solid #ddd;">المؤسسة</th><th style="padding: 12px; border: 1px solid #ddd;">العنوان</th></tr></thead><tbody>`;
-    if(filteredEvents.length === 0) { tableHTML += `<tr><td colspan="4" style="padding: 15px; text-align: center; color: #777;">لا توجد حفلات مبرمجة في هذه الفترة</td></tr>`; } 
-    else { filteredEvents.forEach(e => { tableHTML += `<tr><td style="padding: 12px; text-align: center; border: 1px solid #ddd; font-weight: bold;">${e.date || '-'}</td><td style="padding: 12px; text-align: center; border: 1px solid #ddd;">${e.time || '-'}</td><td style="padding: 12px; text-align: center; border: 1px solid #ddd; color: #E10600; font-weight: bold;">${e.name || '-'}</td><td style="padding: 12px; text-align: center; border: 1px solid #ddd;">${e.address || '-'}</td></tr>`; }); }
-    tableHTML += `</tbody></table>`;
-    div.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #E10600; padding-bottom: 15px; margin-bottom: 20px;"><div style="text-align: right;"><div style="color: #555; font-weight: bold; font-size: 16px; margin-bottom: 5px;">تاريخ الطباعة:</div><div style="color: #E10600; font-size: 15px; font-weight: bold; direction: ltr; display: inline-block;">${getFormattedPrintTime()}</div></div>${getLogoHTMLForPrint("60px", "0px")}</div><h2 style="text-align:center; margin-top: 10px; color: #333; font-size: 26px;">برنامج الحفلات (أيام العمل)</h2><p style="text-align:center; color: #666; font-size: 18px; margin-bottom: 25px;">من: <strong>${fromDate}</strong> &nbsp;|&nbsp; إلى: <strong>${toDate}</strong></p>${tableHTML}<div style="margin-top: 35px; text-align: center; background-color: #fff; padding: 15px; border: 2px dashed #E10600; border-radius: 8px; color: #E10600; font-weight: bold; font-size: 18px;">📌 ملاحظة: هذه التواريخ قابلة للزيادة أو التغيير.</div>`;
-    document.body.appendChild(div); captureAndShow('tempPrintSchedule', 'برنامج_الحفلات');
-}
-
-function openPointage(i) {
-    let emp = teamData[i]; document.getElementById('absentEmpIndex').value = i; document.getElementById('absentEmpName').value = emp.name;
-    let selEvent = document.getElementById('absentEventSelect'); selEvent.innerHTML = '<option value="" disabled selected>-- اختر العرض --</option>';
-    let passedEvents = eventsData.filter(e => isEventPassed(e.date, e.time));
-    passedEvents.forEach((e) => {
-        let eventIndex = eventsData.findIndex(origE => origE.date === e.date && origE.name === e.name);
-        let alreadyAbsent = emp.absences && emp.absences.some(a => a.date === e.date && a.name === e.name);
-        if (!alreadyAbsent) { selEvent.innerHTML += `<option value="${eventIndex}">${e.date} | ${e.name}</option>`; }
-    });
-    let selRep = document.getElementById('replacementEmpSelect'); selRep.innerHTML = '<option value="">-- بدون تعويض (غياب فقط) --</option><option value="extra">👤 موظف خارجي (Extra)</option>';
-    teamData.forEach((otherEmp, index) => { if(index !== i) { selRep.innerHTML += `<option value="${index}">${otherEmp.name} (${otherEmp.role})</option>`; } });
-    document.getElementById('extraFields').style.display = 'none'; document.getElementById('extraName').value = ''; document.getElementById('extraCost').value = ''; show('pointageSection');
-}
-
-function toggleExtraFields() {
-    let val = document.getElementById('replacementEmpSelect').value; if (val === 'extra') { document.getElementById('extraFields').style.display = 'block'; } else { document.getElementById('extraFields').style.display = 'none'; }
-}
-
-function saveAbsence() {
-    let empIndex = document.getElementById('absentEmpIndex').value; let eventIndex = document.getElementById('absentEventSelect').value; let repValue = document.getElementById('replacementEmpSelect').value;
-    if(eventIndex === "") { alert("الرجاء اختيار العرض الذي غاب عنه الموظف."); return; }
-    let emp = teamData[empIndex]; let ev = eventsData[eventIndex]; if(!emp.absences) emp.absences = [];
-    let absenceRecord = { date: ev.date, name: ev.name }; let msg = "";
-    if (repValue === "extra") {
-        let exName = document.getElementById('extraName').value; let exCost = parseFloat(document.getElementById('extraCost').value) || 0;
-        if(exName.trim() === "") { alert("الرجاء إدخال اسم الموظف الخارجي (Extra)."); return; }
-        absenceRecord.replacedByExtra = exName; absenceRecord.extraCost = exCost; msg = `تم تسجيل الغياب، وتم إضافة مصاريف הـ Extra (${exName}) بنجاح.`;
-    } else if (repValue !== "") {
-        let repIndex = parseInt(repValue); let repEmp = teamData[repIndex]; if(!repEmp.replacements) repEmp.replacements = [];
-        repEmp.replacements.push({ date: ev.date, name: ev.name, originalEmp: emp.name }); absenceRecord.replacedByInternal = repEmp.name; msg = "تم تسجيل الغياب وإضافة التعويض للموظف البديل بنجاح.";
-    } else { msg = "تم تسجيل الغياب بنجاح."; }
-    emp.absences.push(absenceRecord); localStorage.setItem('teamData', JSON.stringify(teamData)); show('team', document.querySelectorAll('.nav-buttons button')[3]); triggerAutoBackup(msg); 
-}
-
-function giveAdvance(i) {
-    let emp = teamData[i]; if(!emp.payments) emp.payments = [];
-    let amountStr = prompt(`أدخل مبلغ التسبقة للموظف: ${emp.name}`); if (amountStr === null || amountStr.trim() === "") return;
-    let amount = parseFloat(amountStr); if (isNaN(amount) || amount <= 0) { alert("الرجاء إدخال مبلغ مالي صحيح."); return; }
-    let now = new Date(); emp.payments.push({ type: 'تسبقة', amount: amount, date: now.toISOString().slice(0, 10), time: now.toTimeString().slice(0, 5) });
-    localStorage.setItem('teamData', JSON.stringify(teamData)); render(); 
-}
-
-function payFull(i) {
-    let emp = teamData[i]; if(!emp.payments) emp.payments = []; if(!emp.absences) emp.absences = []; if(!emp.replacements) emp.replacements = [];
-    let passedEvents = eventsData.filter(e => isEventPassed(e.date, e.time));
-    let actualWorkedEvents = passedEvents.filter(e => !emp.absences.some(a => a.date === e.date && a.name === e.name));
-    let passedReplacements = emp.replacements.filter(r => { let origEvent = eventsData.find(e => e.date === r.date && e.name === r.name); return isEventPassed(r.date, origEvent ? origEvent.time : ""); });
-    let totalEarned = (actualWorkedEvents.length + passedReplacements.length) * emp.price;
-    let totalPaid = emp.payments.reduce((sum, p) => sum + p.amount, 0); let remaining = totalEarned - totalPaid;
-    if (remaining === 0) { alert("هذا الموظف خالص كلياً بخصوص العروض المنجزة."); return; }
-    if (confirm(`المبلغ المتبقي في ذمة الموظف ${emp.name} عن العروض المنجزة هو: ${remaining} د.ت.\nهل تريد تصفية الحساب وتسجيله "خالص"؟`)) {
-        let now = new Date(); emp.payments.push({ type: 'خلاص/تسوية', amount: remaining, date: now.toISOString().slice(0, 10), time: now.toTimeString().slice(0, 5) });
-        localStorage.setItem('teamData', JSON.stringify(teamData)); render(); 
-    }
-}
-
-function deleteEmployee(i) {
-    let emp = teamData[i]; if(!emp.payments) emp.payments = []; if(!emp.absences) emp.absences = []; if(!emp.replacements) emp.replacements = [];
-    let passedEvents = eventsData.filter(e => isEventPassed(e.date, e.time));
-    let actualWorkedEvents = passedEvents.filter(e => !emp.absences.some(a => a.date === e.date && a.name === e.name));
-    let passedReplacements = emp.replacements.filter(r => { let origEvent = eventsData.find(e => e.date === r.date && e.name === r.name); return isEventPassed(r.date, origEvent ? origEvent.time : ""); });
-    let totalEarned = (actualWorkedEvents.length + passedReplacements.length) * emp.price;
-    let totalPaid = emp.payments.reduce((sum, p) => sum + p.amount, 0); let remaining = totalEarned - totalPaid;
-    if (remaining > 0) { alert(`⚠ لا يمكن حذف الموظف!\nلديه مستحقات غير خالصة بقيمة ${remaining} د.ت.`); return; } else if (remaining < 0) { alert(`⚠ لا يمكن حذف الموظف!\nفي ذمته تسبقة أو ديون للشركة بقيمة ${Math.abs(remaining)} د.ت. الرجاء تسويتها أولاً.`); return; }
-    if (confirm(`هل أنت متأكد أنك تريد حذف الموظف "${emp.name}" نهائياً؟`)) { teamData.splice(i, 1); localStorage.setItem('teamData', JSON.stringify(teamData)); render(); }
-}
-
-function deleteInst(i) {
-    if (confirm("هل أنت متأكد أنك تريد حذف هذا السجل؟")) { eventsData.splice(i, 1); localStorage.setItem('eventsData', JSON.stringify(eventsData)); render(); }
-}
-
-function addEmployee() {
-    let name = document.getElementById('empName').value; let phone = document.getElementById('empPhone').value; let role = document.getElementById('empRole').value; let price = document.getElementById('empPrice').value;
-    if(!name) { alert("الرجاء إدخال اسم العضو."); return; }
-    teamData.push({ name: name, phone: phone, role: role, price: parseFloat(price) || 0, payments: [], absences: [], replacements: [] });
-    localStorage.setItem('teamData', JSON.stringify(teamData)); document.getElementById('empName').value = ''; document.getElementById('empPhone').value = ''; document.getElementById('empPrice').value = ''; 
-    render(); triggerAutoBackup("تم إضافة العضو بنجاح ✔"); 
-}
-
-function viewFinance() {
-    let fromDate = document.getElementById('financeFrom').value; let toDate = document.getElementById('financeTo').value;
-    let filteredEvents = eventsData;
-    if (fromDate && toDate) { filteredEvents = eventsData.filter(e => e.date >= fromDate && e.date <= toDate); } else if (fromDate) { filteredEvents = eventsData.filter(e => e.date >= fromDate); } else if (toDate) { filteredEvents = eventsData.filter(e => e.date <= toDate); }
-    
-    let passedFilteredEvents = filteredEvents.filter(e => isEventPassed(e.date, e.time));
-    
-    let totalRevenue = 0; let totalCostTeam = 0; let totalCostExtra = 0; let totalEventExpenses = 0;
-    
-    let detailsHTML = `<h3 style="color: #E10600; margin-top: 30px; border-bottom: 2px solid #E10600; padding-bottom: 5px;">التفاصيل المالية لكل عرض</h3>`;
-    
-    if(passedFilteredEvents.length === 0) {
-         detailsHTML += `<p style="text-align:center; color:#777;">لا توجد عروض منجزة في هذه الفترة.</p>`;
-    } else {
-         passedFilteredEvents.forEach(e => {
-             let eRev = parseFloat(e.price) || 0;
-             let eTeamCost = 0; let eExtraCost = 0;
-             let eExp = (e.expenses || []).reduce((s, x) => s + x.amount, 0);
-             
-             totalRevenue += eRev;
-             totalEventExpenses += eExp;
-             
-             teamData.forEach(emp => {
-                 let absenceRecord = emp.absences && emp.absences.find(a => a.date === e.date && a.name === e.name);
-                 let hasReplaced = emp.replacements && emp.replacements.some(r => r.date === e.date && r.name === e.name);
-                 
-                 if (!absenceRecord) { eTeamCost += (parseFloat(emp.price) || 0); } 
-                 else if (absenceRecord.replacedByExtra) { eExtraCost += (parseFloat(absenceRecord.extraCost) || 0); }
-                 
-                 if (hasReplaced) { eTeamCost += (parseFloat(emp.price) || 0); }
-             });
-             
-             totalCostTeam += eTeamCost; totalCostExtra += eExtraCost;
-             let eNet = eRev - (eTeamCost + eExtraCost + eExp);
-             
-             detailsHTML += `
-             <div class="card" style="margin-bottom: 10px; padding: 15px; border-right: 4px solid ${eNet >= 0 ? '#198754' : '#E10600'};">
-                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px dashed #ccc; padding-bottom: 8px; margin-bottom: 8px;">
-                     <strong style="color:#333; font-size:16px;">${e.name} <span style="font-size:12px; color:#888;">(${e.date})</span></strong>
-                     <span style="font-weight:bold; color:#198754;">+ ${eRev} د.ت</span>
-                 </div>
-                 <div style="font-size:14px; color:#555; display:flex; justify-content:space-between; margin-bottom: 4px;">
-                     <span>مصاريف الفريق:</span> <span style="color:#E10600;">- ${eTeamCost + eExtraCost} د.ت</span>
-                 </div>
-                 <div style="font-size:14px; color:#555; display:flex; justify-content:space-between; margin-bottom: 8px;">
-                     <span>مصاريف لوجستية:</span> <span style="color:#E10600;">- ${eExp} د.ت</span>
-                 </div>
-                 <div style="font-size:16px; font-weight:bold; display:flex; justify-content:space-between; background:#f4f4f4; padding:5px 8px; border-radius:5px;">
-                     <span>المرابيح الصافية للعرض:</span> <span style="color:${eNet >= 0 ? '#198754' : '#E10600'};">${eNet >= 0 ? '+ ' : ''}${eNet} د.ت</span>
-                 </div>
-             </div>`;
-         });
-    }
-
-    let totalCost = totalCostTeam + totalCostExtra + totalEventExpenses; 
-    let netProfit = totalRevenue - totalCost;
-
-    let summaryHTML = `<div class="card" style="border: 2px solid #E10600;"><h3 style="text-align:center; color:#333; margin-top:0;">الخلاصة العامة (عروض منجزة فقط)</h3><p style="text-align:center; color:#666; font-size:14px;">${fromDate ? 'من ' + fromDate : 'البداية'} ${toDate ? 'إلى ' + toDate : ''}</p><hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
-    <div style="display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 10px;"><span>عدد العروض المنجزة:</span><strong>${passedFilteredEvents.length}</strong></div>
-    <div style="display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 10px;"><span>المداخيل الجملية:</span><strong style="color: #28a745;">${totalRevenue} د.ت</strong></div>
-    <div style="display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 5px;"><span>مصاريف الفريق الأساسي:</span><strong style="color: #dc3545;">- ${totalCostTeam} د.ت</strong></div>
-    <div style="display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 5px;"><span>مصاريف الـ Extra:</span><strong style="color: #dc3545;">- ${totalCostExtra} د.ت</strong></div>
-    <div style="display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 10px;"><span>مصاريف العروض اللوجستية:</span><strong style="color: #dc3545;">- ${totalEventExpenses} د.ت</strong></div>
-    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: bold; margin-top: 15px; background: #fffafa; padding: 15px; border-radius: 8px; border-top: 2px dashed #E10600;"><span>المرابيح الصافية:</span><span style="color: ${netProfit >= 0 ? '#198754' : '#E10600'};">${netProfit} د.ت</span></div></div>`;
-    
-    document.getElementById('financeResult').innerHTML = summaryHTML + detailsHTML;
 }
 
 function exportFinance() {
-    let resultDiv = document.getElementById('financeResult'); if (resultDiv.innerHTML.trim() === "") { alert("الرجاء الضغط على 'احتساب وعرض' أولاً."); return; }
-    let div = document.createElement('div'); div.id = 'tempExportFinance'; div.style.position = 'absolute'; div.style.top = '0'; div.style.left = '0'; div.style.zIndex = '-9999'; div.style.width = '800px'; div.style.padding = '40px'; div.style.background = '#fff'; div.style.direction = 'rtl'; div.style.fontFamily = 'Cairo, sans-serif'; div.style.color = '#333';
-    div.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #E10600; padding-bottom: 15px; margin-bottom: 20px;"><div style="text-align: right;"><div style="color: #555; font-weight: bold; font-size: 16px; margin-bottom: 5px;">تاريخ الطباعة:</div><div style="color: #E10600; font-size: 15px; font-weight: bold; direction: ltr; display: inline-block;">${getFormattedPrintTime()}</div></div>${getLogoHTMLForPrint("60px", "0px")}</div><h2 style="text-align:center; margin-top: 10px; color: #E10600; font-size: 26px;">التقرير المالي العام والمرابيح</h2>${resultDiv.innerHTML}`; 
-    document.body.appendChild(div); captureAndShow('tempExportFinance', 'تقرير_المرابيح');
-}
-
-function exportAccount() {
-    let i = document.getElementById('empSelect').value; if (i === "") { alert("الرجاء اختيار موظف أولاً"); return; }
-    let employee = teamData[i]; if(!employee.payments) employee.payments = []; if(!employee.absences) employee.absences = []; if(!employee.replacements) employee.replacements = [];
-    let fromDate = document.getElementById('from').value; let toDate = document.getElementById('to').value; 
-    let div = document.createElement('div'); div.id = 'tempExportAccount'; div.style.position = 'absolute'; div.style.top = '0'; div.style.left = '0'; div.style.zIndex = '-9999'; div.style.width = '800px'; div.style.padding = '40px'; div.style.background = '#fff'; div.style.direction = 'rtl'; div.style.fontFamily = 'Cairo, sans-serif'; div.style.color = '#333'; 
-
-    let filteredEvents = eventsData; let filteredPayments = employee.payments; let filteredReplacements = employee.replacements;
-    if (fromDate && toDate) { filteredEvents = eventsData.filter(e => e.date >= fromDate && e.date <= toDate); filteredPayments = employee.payments.filter(p => p.date >= fromDate && p.date <= toDate); filteredReplacements = employee.replacements.filter(r => r.date >= fromDate && r.date <= toDate); } else if (fromDate) { filteredEvents = eventsData.filter(e => e.date >= fromDate); filteredPayments = employee.payments.filter(p => p.date >= fromDate); filteredReplacements = employee.replacements.filter(r => r.date >= fromDate); } else if (toDate) { filteredEvents = eventsData.filter(e => e.date <= toDate); filteredPayments = employee.payments.filter(p => p.date <= toDate); filteredReplacements = employee.replacements.filter(r => r.date <= toDate); }
-    let passedFilteredEvents = filteredEvents.filter(e => isEventPassed(e.date, e.time));
-    let passedReplacements = filteredReplacements.filter(r => { let origEvent = eventsData.find(e => e.date === r.date && e.name === r.name); return isEventPassed(r.date, origEvent ? origEvent.time : ""); });
-    let totalEarned = 0; let tableHTML = `<h3 style="border-bottom: 2px solid #E10600; display: inline-block; padding-bottom: 5px; margin-bottom: 10px;">سجل العروض المنجزة والغيابات</h3><table style="width: 100%; border-collapse: collapse; font-size: 16px;" border="1"><thead><tr style="background-color: #f4f4f4;"><th style="padding: 10px; border: 1px solid #ddd;">التاريخ</th><th style="padding: 10px; border: 1px solid #ddd;">المؤسسة</th><th style="padding: 10px; border: 1px solid #ddd;">المستحق</th></tr></thead><tbody>`;
+    let div = document.getElementById('financeResult');
+    if(!div.innerHTML) { alert("قم بالاحتساب أولاً"); return; }
     
-    if(passedFilteredEvents.length === 0 && passedReplacements.length === 0) { tableHTML += `<tr><td colspan="3" style="padding: 15px; text-align: center; color: #777;">لا توجد حفلات منجزة في هذه الفترة</td></tr>`; } else {
-        passedFilteredEvents.forEach(e => { 
-            let absenceRec = employee.absences.find(a => a.date === e.date && a.name === e.name);
-            if(absenceRec) {
-                let repText = ""; if(absenceRec.replacedByExtra) repText = `<br><span style="font-size:12px;">(عوضه: ${absenceRec.replacedByExtra} - Extra)</span>`; else if(absenceRec.replacedByInternal) repText = `<br><span style="font-size:12px;">(عوضه: ${absenceRec.replacedByInternal})</span>`;
-                tableHTML += `<tr style="background-color: #fff4f4;"><td style="padding: 10px; text-align: center; border: 1px solid #ddd; color: #E10600;">${e.date || '-'}</td><td style="padding: 10px; text-align: center; border: 1px solid #ddd; color: #E10600;">${e.name || '-'} ${repText}</td><td style="padding: 10px; text-align: center; border: 1px solid #ddd; font-weight: bold; color: #E10600;">غائب (0 د.ت)</td></tr>`;
-            } else { totalEarned += employee.price; tableHTML += `<tr><td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${e.date || '-'}</td><td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${e.name || '-'}</td><td style="padding: 10px; text-align: center; border: 1px solid #ddd; font-weight: bold;">${employee.price}</td></tr>`; }
+    // حل مشكلة الصورة البيضاء: جعل العنصر مرئي لحظة التصوير
+    let clone = div.cloneNode(true);
+    clone.style.position = 'fixed'; clone.style.top = '0'; clone.style.left = '0';
+    clone.style.width = '350px'; clone.style.background = '#fff'; clone.style.zIndex = '-1';
+    document.body.appendChild(clone);
+
+    setTimeout(() => {
+        html2canvas(clone, { scale: 2, useCORS: true }).then(canvas => {
+            document.getElementById('resultImage').src = canvas.toDataURL("image/png");
+            document.getElementById('imageModal').style.display = 'flex';
+            document.body.removeChild(clone);
         });
-        passedReplacements.forEach(r => { totalEarned += employee.price; tableHTML += `<tr style="background-color: #f9fdfc;"><td style="padding: 10px; text-align: center; border: 1px solid #ddd; color: #333;">${r.date || '-'}</td><td style="padding: 10px; text-align: center; border: 1px solid #ddd; color: #333;">${r.name || '-'} <br><span style="font-size:12px; color: #666;">(تعويض لـ ${r.originalEmp})</span></td><td style="padding: 10px; text-align: center; border: 1px solid #ddd; font-weight: bold; color: #333;">${employee.price}</td></tr>`; });
-    }
-    tableHTML += `</tbody></table>`;
-    let totalPaid = filteredPayments.reduce((sum, p) => sum + p.amount, 0); let remaining = totalEarned - totalPaid;
-    let paymentsHTML = `<h3 style="margin-top: 30px; border-bottom: 2px solid #333; display: inline-block; padding-bottom: 5px; margin-bottom: 10px;">سجل الدفوعات المستلمة</h3><table style="width: 100%; border-collapse: collapse; font-size: 16px;" border="1"><thead><tr style="background-color: #f4f4f4;"><th style="padding: 10px; border: 1px solid #ddd;">التاريخ</th><th style="padding: 10px; border: 1px solid #ddd;">الوقت</th><th style="padding: 10px; border: 1px solid #ddd;">النوع</th><th style="padding: 10px; border: 1px solid #ddd;">المبلغ</th></tr></thead><tbody>`;
-    if(filteredPayments.length === 0) { paymentsHTML += `<tr><td colspan="4" style="padding: 15px; text-align: center; color: #777;">لا توجد دفعات</td></tr>`; } else { filteredPayments.forEach(p => { paymentsHTML += `<tr><td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${p.date}</td><td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${p.time}</td><td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${p.type}</td><td style="padding: 10px; text-align: center; border: 1px solid #ddd; color: #198754; font-weight: bold;">${p.amount}</td></tr>`; }); }
-    paymentsHTML += `</tbody></table>`;
-    let summaryHTML = `<div style="margin-top: 30px; background: #fff; padding: 20px; border-radius: 10px; border: 2px solid #E10600;"><h3 style="margin-top: 0; text-align: center; color: #E10600;">الخلاصة المالية (للعروض المنجزة فقط)</h3><div style="display: flex; justify-content: space-between; font-size: 18px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 10px;"><span>المبلغ الجملي للعروض المنجزة:</span><strong>${totalEarned} د.ت</strong></div><div style="display: flex; justify-content: space-between; font-size: 18px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 10px;"><span>المبلغ الجملي للتسبيقات:</span><strong style="color: #198754;">${totalPaid} د.ت</strong></div><div style="display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; margin-top: 15px;"><span>المبلغ المتبقي:</span><span style="color: ${remaining > 0 ? '#E10600' : '#333'};">${remaining} د.ت</span></div></div>`;
-
-    div.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #E10600; padding-bottom: 15px; margin-bottom: 20px;"><div style="text-align: right;"><div style="color: #555; font-weight: bold; font-size: 16px; margin-bottom: 5px;">تاريخ الطباعة:</div><div style="color: #E10600; font-size: 15px; font-weight: bold; direction: ltr; display: inline-block;">${getFormattedPrintTime()}</div></div>${getLogoHTMLForPrint("60px", "0px")}</div><h2 style="text-align:center; margin-top: 10px; color: #333; font-size: 26px;">كشف حساب تفصيلي للموظف</h2><div style="text-align:center; margin-bottom: 25px; background: #fdfdfd; padding: 15px; border-radius: 8px; border: 1px dashed #E10600;"><span style="font-size: 22px; font-weight: bold; color: #E10600;">${employee.name}</span><span style="font-size: 18px; color: #666;"> (${employee.role})</span><br><div style="margin-top: 10px; font-size: 15px; color: #555;">الفترة: <strong>${fromDate ? 'من ' + fromDate : 'البداية'}</strong> إلى <strong>${toDate}</strong></div></div>${tableHTML}${paymentsHTML}${summaryHTML}`;
-    document.body.appendChild(div); captureAndShow('tempExportAccount', `كشف_حساب_${employee.name}`);
+    }, 500);
 }
 
-function exportPromo() {
-    let title = document.getElementById('promoTitle').value; let desc = document.getElementById('promoDesc').value; let start = document.getElementById('promoStart').value; let end = document.getElementById('promoEnd').value; let phone = document.getElementById('promoPhone').value; let imgInput = document.getElementById('promoImage');
-    if (!title) { alert("الرجاء إدخال عنوان العرض على الأقل."); return; }
-    let formattedDesc = desc.split('\n').map(line => `<div style="margin-bottom:5px;">${line}</div>`).join('');
-
-    let div = document.createElement('div'); div.id = 'tempExportPromo'; div.style.position = 'absolute'; div.style.top = '0'; div.style.left = '0'; div.style.zIndex = '-9999'; div.style.width = '800px'; div.style.padding = '40px'; div.style.background = '#ffffff'; div.style.direction = 'rtl'; div.style.fontFamily = 'Cairo, sans-serif'; div.style.color = '#333'; div.style.border = '12px solid #E10600'; div.style.borderRadius = '20px'; div.style.boxSizing = 'border-box';
-    let logoHtml = getLogoHTMLForPrint("120px", "10px");
-
-    let htmlContent = `<div style="text-align: center; margin-bottom: 20px;">${logoHtml}<p style="color: #666; font-size: 22px; font-weight: bold; margin: 10px 0 0 0;">تـقـدم لـكـم حـصـريـاً</p></div><h2 style="text-align: center; color: #fff; font-size: 45px; margin: 20px 0; background: #E10600; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(225,6,0,0.2);">${title}</h2><div style="font-size: 24px; font-weight: 600; line-height: 1.8; color: #444; text-align: center; margin-bottom: 30px; letter-spacing: normal; font-variant-ligatures: normal; word-wrap: break-word;">${formattedDesc}</div>`;
-
-    let generateCanvas = (imgHtml) => {
-        if(imgHtml) { htmlContent += `<div style="text-align: center; margin-bottom: 30px;">${imgHtml}</div>`; }
-        let dateHtml = "";
-        if (start || end) {
-            dateHtml = `<div style="background: #fcfcfc; color: #E10600; padding: 20px; border-radius: 12px; font-size: 26px; font-weight: 800; text-align: center; margin-bottom: 20px; border: 3px dashed #E10600;">`;
-            if (start && end) dateHtml += `فترة العروض: من ${start} إلى ${end}`; else if (start) dateHtml += `بداية العروض من: ${start}`; else if (end) dateHtml += `العروض متواصلة إلى: ${end}`;
-            dateHtml += `</div>`;
-        }
-        htmlContent += dateHtml;
-        if (phone) { htmlContent += `<div style="text-align: center; margin-top: 30px; padding-top: 25px; border-top: 2px solid #ddd;"><p style="font-size: 24px; color: #555; margin-bottom: 10px; font-weight: bold;">للحجز والاستفسار الرجاء الاتصال بنا:</p><p style="font-size: 40px; color: #E10600; font-weight: 900; margin: 0; direction: ltr;">📞 ${phone}</p></div>`; }
-        div.innerHTML = htmlContent; document.body.appendChild(div); captureAndShow('tempExportPromo', 'إشهار');
-    };
-
-    if (imgInput.files && imgInput.files[0]) {
-        let reader = new FileReader();
-        reader.onload = function(e) {
-            let imgHtml = `<img src="${e.target.result}" style="max-width: 100%; max-height: 450px; border-radius: 15px; border: 6px solid #E10600; box-shadow: 0 8px 20px rgba(0,0,0,0.15);">`;
-            generateCanvas(imgHtml);
-        };
-        reader.readAsDataURL(imgInput.files[0]);
-    } else { generateCanvas(""); }
+function closeImageModal() { document.getElementById('imageModal').style.display = 'none'; }
+function show(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
 }
+function logout() { localStorage.removeItem('bechaSession'); location.reload(); }
+function updateClock() { document.getElementById('live-clock').innerText = "🕒 " + new Date().toLocaleTimeString('ar-TN', {hour:'2-digit', minute:'2-digit'}); }
+setInterval(updateClock, 1000); updateClock();
 
-function exportDataBackup() {
-    let backupData = { events: eventsData, team: teamData }; let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData)); let downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); let d = new Date(); let dateString = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}_${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}`; downloadAnchorNode.setAttribute("download", `BechaEvents_ManualBackup_${dateString}.json`); document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove();
-}
-
-function importDataBackup(event) {
-    let file = event.target.files[0]; if (!file) return;
-    if (!confirm("⚠ تحذير هام: استرجاع هذا الملف سيعوض ويمسح جميع البيانات الموجودة حالياً في التطبيق. هل أنت متأكد أنك تريد المتابعة؟")) { event.target.value = ''; return; }
-    let reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            let backupData = JSON.parse(e.target.result);
-            if (backupData.events !== undefined && backupData.team !== undefined) {
-                eventsData = backupData.events; teamData = backupData.team;
-                localStorage.setItem('eventsData', JSON.stringify(eventsData)); localStorage.setItem('teamData', JSON.stringify(teamData));
-                alert("✅ تم استرجاع البيانات بنجاح!"); render(); show('home', document.querySelectorAll('.nav-buttons button')[0]);
-            } else { alert("❌ ملف غير صالح! الرجاء اختيار ملف النسخة الاحتياطية الصحيح الخاص بالتطبيق."); }
-        } catch(err) { alert("❌ حدث خطأ أثناء قراءة الملف. تأكد من أنك اخترت الملف الصحيح."); }
-    }; reader.readAsText(file);
-}
-
-render();
-
+let session = localStorage.getItem('bechaSession');
+if(session) loginSuccess(JSON.parse(session));
 </script>
-
 </body>
 </html>
