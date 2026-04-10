@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Becha Events PRO - Full System</title>
+    <title>Becha Events PRO - Ultimate System</title>
     
     <meta name="theme-color" content="#E10600">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,48 +20,55 @@
 
     <style>
         :root { --primary-red: #E10600; --white: #ffffff; --light-bg: #f4f7f6; --sidebar-width: 250px; }
+        
         body { font-family: 'Cairo', sans-serif; background: var(--light-bg); margin: 0; direction: rtl; overflow-x: hidden; }
 
         /* Layout Structure */
         .app-container { display: flex; min-height: 100vh; }
+        
         aside { 
             width: var(--sidebar-width); background: var(--white); border-left: 1px solid #ddd; 
             position: fixed; height: 100vh; right: 0; top: 0; display: flex; flex-direction: column; z-index: 1000; 
             box-shadow: -2px 0 10px rgba(0,0,0,0.05);
         }
+
         main { flex-grow: 1; margin-right: var(--sidebar-width); padding: 30px; box-sizing: border-box; }
 
         @media (max-width: 900px) {
             aside { width: 100%; height: auto; position: fixed; bottom: 0; top: auto; flex-direction: row; border-top: 2px solid var(--primary-red); }
             main { margin-right: 0; padding: 15px 15px 100px 15px; }
             .sidebar-header { display: none; }
+            .nav-btn span { display: none; }
         }
 
         .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 5px solid var(--primary-red); }
+        
         .red-btn { 
             background: var(--primary-red); color: white; border: none; padding: 14px; border-radius: 10px; 
             font-weight: bold; cursor: pointer; width: 100%; font-family: 'Cairo'; margin-top: 10px; font-size: 16px; 
             transition: 0.2s;
         }
+
         input, select { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Cairo'; font-size: 15px; }
 
+        /* Sync Indicator */
         .sync-info { padding: 15px; border-top: 1px solid #eee; font-size: 12px; text-align: center; color: #888; }
         .dot { height: 8px; width: 8px; background: #198754; border-radius: 50%; display: inline-block; margin-left: 5px; }
         .pulse { animation: pulse-green 1.5s infinite; }
         @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(25, 135, 84, 0); } 100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); } }
 
+        /* Modal Preview */
         #imageModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         #resultImage { max-width: 100%; max-height: 80%; border-radius: 10px; border: 4px solid white; }
 
-        /* القالب المخفي للتصوير */
+        /* 🖼️ القالب المخفي للتصوير */
         #hiddenExportArea { 
-            position: absolute; left: -9999px; top: 0; width: 500px; padding: 40px; background: white; 
-            border-top: 20px solid var(--primary-red); border-bottom: 10px solid var(--primary-red);
+            position: absolute; left: -9999px; top: 0; 
+            width: 500px; padding: 40px; background: white; 
+            border-top: 20px solid var(--primary-red); text-align: center;
         }
-        .export-header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
-        .export-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .export-table th, .export-table td { border: 1px solid #eee; padding: 15px; text-align: right; font-size: 18px; }
-        .export-footer { margin-top: 30px; text-align: center; padding: 20px; background: var(--primary-red); color: white; border-radius: 10px; font-size: 24px; font-weight: 900; }
+
+        .event-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -70,7 +77,7 @@
     <h1 style="color:var(--primary-red); font-weight:900; font-size:40px; margin:0;">BECHA EVENTS</h1>
     <p style="color:#666; margin-bottom:30px;">نظام الإدارة الشامل - حمادي داود</p>
     <input type="password" id="loginPass" placeholder="كلمة السر" style="max-width:320px; text-align:center;">
-    <button class="red-btn" style="max-width:320px;" onclick="login()">دخول</button>
+    <button class="red-btn" style="max-width:320px;" onclick="login()">دخول آمن</button>
 </div>
 
 <div class="app-container" id="mainApp" style="display:none;">
@@ -79,10 +86,10 @@
             <div style="color:var(--primary-red); font-weight:900; font-size:22px;">BECHA EVENTS</div>
         </div>
         <nav style="flex-grow:1; padding:15px; display:flex; flex-direction:column; gap:10px;">
-            <button class="red-btn" onclick="showSection('home')">🏠 الرئيسية</button>
-            <button class="red-btn" style="background:#333;" onclick="showSection('events')">🎭 الحفلات</button>
-            <button class="red-btn" style="background:#555;" onclick="showSection('accountSection')">📊 كشف حساب</button>
-            <button class="red-btn" style="background:#000; margin-top:auto;" onclick="logout()">🚪 خروج</button>
+            <button class="red-btn nav-btn" onclick="showSection('home')">🏠 <span>الرئيسية</span></button>
+            <button class="red-btn nav-btn" style="background:#333;" onclick="showSection('events')">🎭 <span>الحفلات</span></button>
+            <button class="red-btn nav-btn" style="background:#555;" onclick="showSection('accountSection')">📊 <span>كشف حساب</span></button>
+            <button class="red-btn nav-btn" style="background:#000; margin-top:auto;" onclick="logout()">🚪 <span>خروج</span></button>
         </nav>
         <div class="sync-info">
             <span id="syncDot" class="dot"></span> <span id="liveClock">🕒 00:00</span>
@@ -92,11 +99,12 @@
     <main>
         <div id="home" class="content-section">
             <div class="card" style="text-align:center;">
-                <h3 style="margin:0; color:#888;">السيولة المتوفرة (Live)</h3>
+                <h3 style="margin:0; color:#888;">السيولة المقبوضة (Cash) 💰</h3>
                 <h1 id="totalBalance" style="color:var(--primary-red); font-size:50px; margin:15px 0;">0 د.ت</h1>
+                <p style="font-size:12px; color:#999;">يتم احتساب المبالغ "الخالصة" فقط</p>
             </div>
             <div class="card">
-                <h2>📅 حجوزات اليوم</h2>
+                <h2>📅 برنامج اليوم</h2>
                 <div id="todayEventsList">لا يوجد عروض اليوم.</div>
             </div>
         </div>
@@ -104,12 +112,15 @@
         <div id="events" class="content-section" style="display:none;">
             <div class="card">
                 <h2>➕ إضافة حجز جديد</h2>
-                <input type="text" id="name" placeholder="اسم الروضة / المؤسسة">
+                <input type="text" id="name" placeholder="اسم المؤسسة">
                 <input type="date" id="date">
-                <input type="number" id="price" placeholder="ثمن العرض">
+                <input type="number" id="price" placeholder="الثمن">
                 <button class="red-btn" onclick="addEvent()">حفظ في السحابة</button>
             </div>
-            <div id="allEventsList"></div>
+            <div class="card">
+                <h2>📋 سجل الحفلات (اضغط للقبض)</h2>
+                <div id="allEventsList"></div>
+            </div>
         </div>
 
         <div id="accountSection" class="content-section" style="display:none;">
@@ -123,21 +134,19 @@
 </div>
 
 <div id="hiddenExportArea">
-    <div class="export-header">
-        <h1 style="color:var(--primary-red); margin:0; font-size:35px;">BECHA EVENTS</h1>
-    </div>
-    <div style="font-size:20px; margin-bottom:20px; padding:15px; background:#f9f9f9; border-radius:10px;">
+    <h1 style="color:var(--primary-red); margin:0; font-size:35px;">BECHA EVENTS</h1>
+    <div style="font-size:20px; margin-top:30px; text-align:right;">
         <b>الموظف:</b> <span id="expName">---</span><br>
-        <b>التاريخ:</b> <span id="expDate">---</span>
+        <b>تاريخ الكشف:</b> <span id="expDate">---</span><br>
+        <b>المبلغ:</b> <span id="expPrice">---</span>
     </div>
-    <table class="export-table">
-        <tr><th>بيان</th><th>المستحقات</th></tr>
-        <tr><td>أجرة العروض</td><td id="expPrice">0 د.ت</td></tr>
-    </table>
-    <div class="export-footer" id="expTotal">المجموع: 0 د.ت</div>
+    <div style="margin-top:40px; background:var(--primary-red); color:white; padding:20px; border-radius:10px; font-size:24px; font-weight:900;">
+        المجموع الكلي: <span id="expTotal">0</span> د.ت
+    </div>
 </div>
 
 <div id="imageModal">
+    <p style="color:white;">✅ جاهزة! اضغط مطولاً لحفظ الصورة</p>
     <img id="resultImage">
     <button class="red-btn" style="width:200px; margin-top:20px;" onclick="document.getElementById('imageModal').style.display='none'">إغلاق</button>
 </div>
@@ -162,7 +171,7 @@ function login() {
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('mainApp').style.display = 'flex';
         startSync();
-    } else { alert("غلط!"); }
+    } else { alert("كلمة سر خاطئة!"); }
 }
 
 function startSync() {
@@ -172,38 +181,67 @@ function startSync() {
             events = d.events || [];
             team = d.team || [];
             updateUI();
+            const dot = document.getElementById('syncDot');
+            dot.classList.add('pulse');
+            setTimeout(() => dot.classList.remove('pulse'), 1500);
         }
     });
 }
 
 function updateUI() {
-    let total = events.reduce((s, e) => s + (parseFloat(e.price) || 0), 0);
-    document.getElementById('totalBalance').innerText = total + " د.ت";
+    // حساب السيولة المقبوضة فقط
+    let paidTotal = events.filter(e => e.collected === true).reduce((s, e) => s + (parseFloat(e.price) || 0), 0);
+    document.getElementById('totalBalance').innerText = paidTotal + " د.ت";
+    
     document.getElementById('empSelect').innerHTML = team.map((t, i) => `<option value="${i}">${t.name}</option>`).join('');
     
+    // برنامج اليوم
     let today = new Date().toISOString().slice(0, 10);
     let todayList = events.filter(e => e.date === today);
-    document.getElementById('todayEventsList').innerHTML = todayList.map(e => `<div class='card'>${e.name}</div>`).join('') || "لا يوجد عروض.";
+    document.getElementById('todayEventsList').innerHTML = todayList.map(e => `<div class='card'><b>${e.name}</b></div>`).join('') || "لا يوجد عروض اليوم.";
+
+    // سجل الحفلات
+    document.getElementById('allEventsList').innerHTML = events.map((e, i) => `
+        <div class="event-item">
+            <div><b>${e.name}</b><br><small>${e.date}</small></div>
+            <div>
+                ${e.collected ? '<span style="color:green">✅ خالص</span>' : `<button class="red-btn" style="width:auto; padding:5px 10px;" onclick="collectMoney(${i})">قبض ${e.price}د</button>`}
+                <button onclick="deleteEvent(${i})" style="border:none; background:none; color:red; margin-right:10px; cursor:pointer;">🗑</button>
+            </div>
+        </div>
+    `).reverse().join('');
 }
 
 function addEvent() {
-    let name = document.getElementById('name').value, date = document.getElementById('date').value;
-    if(!name || !date) return;
-    events.push({ name, date, price: document.getElementById('price').value });
+    let name = document.getElementById('name').value, date = document.getElementById('date').value, price = document.getElementById('price').value;
+    if(!name || !date || !price) return;
+    events.push({ name, date, price, collected: false });
     db.ref('BechaEventsData').update({ events: events });
-    alert("حفظ!");
+    alert("تم الحفظ!");
+}
+
+function collectMoney(i) {
+    events[i].collected = true;
+    db.ref('BechaEventsData').update({ events: events });
+}
+
+function deleteEvent(i) {
+    if(confirm("حذف الحفلة؟")) {
+        events.splice(i, 1);
+        db.ref('BechaEventsData').update({ events: events });
+    }
 }
 
 function generateAccountImage() {
-    let idx = document.getElementById('empSelect').value;
-    let member = team[idx];
+    let member = team[document.getElementById('empSelect').value];
+    if(!member) return;
     document.getElementById('expName').innerText = member.name;
     document.getElementById('expDate').innerText = new Date().toLocaleDateString('ar-TN');
     document.getElementById('expPrice').innerText = member.price + " د.ت";
-    document.getElementById('expTotal').innerText = "المجموع: " + member.price + " د.ت";
+    document.getElementById('expTotal').innerText = member.price;
 
     html2canvas(document.getElementById('hiddenExportArea'), { scale: 3 }).then(canvas => {
-        document.getElementById('resultImage').src = canvas.toDataURL("image/png");
+        document.getElementById('resultImage').src = canvas.toDataURL();
         document.getElementById('imageModal').style.display = 'flex';
     });
 }
