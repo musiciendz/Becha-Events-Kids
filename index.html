@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Becha Events - Ultimate Live Management</title>
-
+    <title>Becha Events PRO - Full System</title>
+    
     <meta name="theme-color" content="#E10600">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,147 +19,130 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        :root { --primary-red: #E10600; --dark-text: #222; --light-bg: #f8f9fa; --white: #ffffff; --sidebar-width: 250px; }
-        
-        body { font-family: 'Cairo', sans-serif; background-color: var(--light-bg); margin: 0; color: var(--dark-text); overflow-x: hidden; }
+        :root { --primary-red: #E10600; --white: #ffffff; --light-bg: #f4f7f6; --sidebar-width: 250px; }
+        body { font-family: 'Cairo', sans-serif; background: var(--light-bg); margin: 0; direction: rtl; overflow-x: hidden; }
 
-        /* 💻 تنسيق الـ PC (Desktop Mode) */
-        .wrapper { display: flex; min-height: 100vh; }
-        
+        /* Layout Structure */
+        .app-container { display: flex; min-height: 100vh; }
         aside { 
-            width: var(--sidebar-width); background: var(--white); border-left: 1px solid #ddd;
-            position: fixed; height: 100vh; right: 0; top: 0; z-index: 1000;
-            display: flex; flex-direction: column; transition: 0.3s;
+            width: var(--sidebar-width); background: var(--white); border-left: 1px solid #ddd; 
+            position: fixed; height: 100vh; right: 0; top: 0; display: flex; flex-direction: column; z-index: 1000; 
+            box-shadow: -2px 0 10px rgba(0,0,0,0.05);
         }
+        main { flex-grow: 1; margin-right: var(--sidebar-width); padding: 30px; box-sizing: border-box; }
 
-        .brand { padding: 30px 15px; text-align: center; border-bottom: 1px solid #eee; }
-        .brand h1 { color: var(--primary-red); font-size: 20px; font-weight: 900; margin: 0; letter-spacing: 1px; }
-
-        .menu { flex-grow: 1; padding: 20px 10px; display: flex; flex-direction: column; gap: 5px; }
-        .menu button {
-            background: none; border: none; padding: 12px 15px; text-align: right;
-            font-size: 15px; font-weight: 700; border-radius: 10px; cursor: pointer;
-            color: #555; transition: 0.3s; display: flex; align-items: center; gap: 10px;
-        }
-        .menu button:hover { background: #fff5f5; color: var(--primary-red); }
-        .menu button.active-nav { background: var(--primary-red); color: white; box-shadow: 0 4px 12px rgba(225, 6, 0, 0.2); }
-
-        main { flex-grow: 1; margin-right: var(--sidebar-width); padding: 40px; box-sizing: border-box; }
-
-        /* 📱 تنسيق الموبايل (Mobile Mode) */
         @media (max-width: 900px) {
-            aside { 
-                width: 100%; height: auto; position: fixed; top: auto; bottom: 0; 
-                flex-direction: row; border-left: none; border-top: 2px solid var(--primary-red);
-            }
-            .brand { display: none; }
-            .menu { flex-direction: row; overflow-x: auto; padding: 10px; gap: 10px; }
-            .menu button { white-space: nowrap; padding: 8px 15px; font-size: 13px; }
-            main { margin-right: 0; padding: 20px 15px 100px 15px; }
-            .pc-only { display: none; }
+            aside { width: 100%; height: auto; position: fixed; bottom: 0; top: auto; flex-direction: row; border-top: 2px solid var(--primary-red); }
+            main { margin-right: 0; padding: 15px 15px 100px 15px; }
+            .sidebar-header { display: none; }
         }
 
-        /* 🃏 الكروت والتنظيم */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .card { background: var(--white); padding: 25px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border-top: 5px solid var(--primary-red); position: relative; }
-        .treasury-card { background: linear-gradient(135deg, #E10600, #b00500); color: white; text-align: center; }
-        .treasury-card h3 { margin: 0; font-size: 16px; opacity: 0.9; }
-        .treasury-card .amount { font-size: 35px; font-weight: 900; margin: 10px 0; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 5px solid var(--primary-red); }
+        .red-btn { 
+            background: var(--primary-red); color: white; border: none; padding: 14px; border-radius: 10px; 
+            font-weight: bold; cursor: pointer; width: 100%; font-family: 'Cairo'; margin-top: 10px; font-size: 16px; 
+            transition: 0.2s;
+        }
+        input, select { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Cairo'; font-size: 15px; }
 
-        /* 🟢 نقطة المزامنة */
-        .sync-status { padding: 15px; border-top: 1px solid #eee; font-size: 12px; text-align: center; }
-        .dot { height: 10px; width: 10px; background: #198754; border-radius: 50%; display: inline-block; margin-left: 5px; }
+        .sync-info { padding: 15px; border-top: 1px solid #eee; font-size: 12px; text-align: center; color: #888; }
+        .dot { height: 8px; width: 8px; background: #198754; border-radius: 50%; display: inline-block; margin-left: 5px; }
         .pulse { animation: pulse-green 1.5s infinite; }
-        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(25, 135, 84, 0); } 100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); } }
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(25, 135, 84, 0); } 100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); } }
 
-        /* 🔐 شاشة الدخول */
-        #loginOverlay { position: fixed; inset: 0; background: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .red-btn { background: var(--primary-red); color: white; border: none; padding: 14px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; font-family: 'Cairo'; font-size: 16px; }
+        #imageModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        #resultImage { max-width: 100%; max-height: 80%; border-radius: 10px; border: 4px solid white; }
 
-        .event-item { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        .event-item:last-child { border-bottom: none; }
+        /* القالب المخفي للتصوير */
+        #hiddenExportArea { 
+            position: absolute; left: -9999px; top: 0; width: 500px; padding: 40px; background: white; 
+            border-top: 20px solid var(--primary-red); border-bottom: 10px solid var(--primary-red);
+        }
+        .export-header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
+        .export-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .export-table th, .export-table td { border: 1px solid #eee; padding: 15px; text-align: right; font-size: 18px; }
+        .export-footer { margin-top: 30px; text-align: center; padding: 20px; background: var(--primary-red); color: white; border-radius: 10px; font-size: 24px; font-weight: 900; }
     </style>
 </head>
-
 <body>
 
-<div id="loginOverlay">
-    <h1 style="color: var(--primary-red); font-weight: 900; font-size: 40px; margin: 0;">BECHA EVENTS</h1>
-    <p style="color: #666; margin-bottom: 30px;">نظام الإدارة السحابي PRO</p>
-    <div style="width: 100%; max-width: 350px;">
-        <input type="text" id="loginUser" placeholder="إسم المستخدم" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd;">
-        <input type="password" id="loginPass" placeholder="كلمة السر" style="width: 100%; padding: 12px; margin-bottom: 25px; border-radius: 8px; border: 1px solid #ddd;">
-        <button class="red-btn" onclick="attemptLogin()">دخول آمن</button>
-    </div>
+<div id="loginOverlay" style="position:fixed; inset:0; background:white; z-index:20000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+    <h1 style="color:var(--primary-red); font-weight:900; font-size:40px; margin:0;">BECHA EVENTS</h1>
+    <p style="color:#666; margin-bottom:30px;">نظام الإدارة الشامل - حمادي داود</p>
+    <input type="password" id="loginPass" placeholder="كلمة السر" style="max-width:320px; text-align:center;">
+    <button class="red-btn" style="max-width:320px;" onclick="login()">دخول</button>
 </div>
 
-<div class="wrapper" id="mainApp" style="display:none;">
+<div class="app-container" id="mainApp" style="display:none;">
     <aside>
-        <div class="brand">
-            <h1>BECHA EVENTS</h1>
-            <div style="font-size: 11px; color: #999; margin-top: 5px;">Production & Theater</div>
+        <div class="sidebar-header" style="padding:30px 15px; text-align:center; border-bottom:1px solid #eee;">
+            <div style="color:var(--primary-red); font-weight:900; font-size:22px;">BECHA EVENTS</div>
         </div>
-        <nav class="menu">
-            <button onclick="show('home', this)" class="active-nav">🏠 الرئيسية</button>
-            <button onclick="show('events', this)">🎭 إدارة الحفلات</button>
-            <button onclick="show('team', this)">👥 شؤون الفريق</button>
-            <button onclick="show('finance', this)">💰 تقارير الأرباح</button>
-            <button onclick="show('settings', this)">⚙️ الإعدادات</button>
+        <nav style="flex-grow:1; padding:15px; display:flex; flex-direction:column; gap:10px;">
+            <button class="red-btn" onclick="showSection('home')">🏠 الرئيسية</button>
+            <button class="red-btn" style="background:#333;" onclick="showSection('events')">🎭 الحفلات</button>
+            <button class="red-btn" style="background:#555;" onclick="showSection('accountSection')">📊 كشف حساب</button>
+            <button class="red-btn" style="background:#000; margin-top:auto;" onclick="logout()">🚪 خروج</button>
         </nav>
-        <div class="sync-status">
+        <div class="sync-info">
             <span id="syncDot" class="dot"></span> <span id="liveClock">🕒 00:00</span>
-            <div style="margin-top: 10px; cursor: pointer; color: var(--primary-red); font-weight: bold;" onclick="logout()">🚪 خروج</div>
         </div>
     </aside>
 
     <main>
-        <div id="home" class="section active">
-            <div class="grid">
-                <div class="card treasury-card">
-                    <h3>إجمالي السيولة (Live)</h3>
-                    <div class="amount" id="totalAmount">0 د.ت</div>
-                    <div style="font-size: 12px; opacity: 0.8;">تحديث لحظي من Firebase</div>
-                </div>
-                <div class="card">
-                    <h2>📅 حجوزات اليوم</h2>
-                    <div id="todayEventsList"></div>
-                </div>
-                <div class="card pc-only">
-                    <h2>🚀 وصول سريع</h2>
-                    <button class="red-btn" style="background:#333; margin-bottom:10px;" onclick="show('addEvent')">➕ إضافة حجز جديد</button>
-                    <button class="red-btn" style="background:#198754;" onclick="show('finance')">📊 عرض المرابيح</button>
-                </div>
+        <div id="home" class="content-section">
+            <div class="card" style="text-align:center;">
+                <h3 style="margin:0; color:#888;">السيولة المتوفرة (Live)</h3>
+                <h1 id="totalBalance" style="color:var(--primary-red); font-size:50px; margin:15px 0;">0 د.ت</h1>
+            </div>
+            <div class="card">
+                <h2>📅 حجوزات اليوم</h2>
+                <div id="todayEventsList">لا يوجد عروض اليوم.</div>
             </div>
         </div>
 
-        <div id="addEvent" class="section">
+        <div id="events" class="content-section" style="display:none;">
             <div class="card">
-                <h2>➕ تسجيل حجز جديد</h2>
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px;">
-                    <input type="text" id="name" placeholder="إسم المؤسسة">
-                    <input type="date" id="date">
-                    <input type="time" id="time">
-                    <input type="number" id="price" placeholder="الثمن (د.ت)">
-                </div>
-                <button class="red-btn" style="margin-top:20px;" onclick="addEvent()">حفظ في السحابة</button>
+                <h2>➕ إضافة حجز جديد</h2>
+                <input type="text" id="name" placeholder="اسم الروضة / المؤسسة">
+                <input type="date" id="date">
+                <input type="number" id="price" placeholder="ثمن العرض">
+                <button class="red-btn" onclick="addEvent()">حفظ في السحابة</button>
             </div>
+            <div id="allEventsList"></div>
         </div>
 
-        <div id="events" class="section"><div class="card"><h2>🎭 سجل العروض</h2><div id="allEventsList"></div></div></div>
-        <div id="finance" class="section"><div class="card"><h2>💰 التقارير المالية</h2><div id="financeResult"></div></div></div>
-        
-        <div id="settings" class="section">
+        <div id="accountSection" class="content-section" style="display:none;">
             <div class="card">
-                <h2>⚙️ الإعدادات</h2>
-                <button class="red-btn" style="background:#198754;" onclick="recovery()">🔄 استعادة البيانات من الهاتف</button>
-                <div id="usersList" style="margin-top:20px;"></div>
+                <h2>📸 تصدير كشف حساب موظف</h2>
+                <select id="empSelect"></select>
+                <button class="red-btn" style="background:#198754;" onclick="generateAccountImage()">توليد صورة الكشف</button>
             </div>
         </div>
     </main>
 </div>
 
+<div id="hiddenExportArea">
+    <div class="export-header">
+        <h1 style="color:var(--primary-red); margin:0; font-size:35px;">BECHA EVENTS</h1>
+    </div>
+    <div style="font-size:20px; margin-bottom:20px; padding:15px; background:#f9f9f9; border-radius:10px;">
+        <b>الموظف:</b> <span id="expName">---</span><br>
+        <b>التاريخ:</b> <span id="expDate">---</span>
+    </div>
+    <table class="export-table">
+        <tr><th>بيان</th><th>المستحقات</th></tr>
+        <tr><td>أجرة العروض</td><td id="expPrice">0 د.ت</td></tr>
+    </table>
+    <div class="export-footer" id="expTotal">المجموع: 0 د.ت</div>
+</div>
+
+<div id="imageModal">
+    <img id="resultImage">
+    <button class="red-btn" style="width:200px; margin-top:20px;" onclick="document.getElementById('imageModal').style.display='none'">إغلاق</button>
+</div>
+
 <script>
-// --- 📡 Firebase Setup ---
 const firebaseConfig = {
     apiKey: "AIzaSyCTTjp34QhF6MPNemwKhoq7385xnJKK_Hg",
     authDomain: "becha-events-kids.firebaseapp.com",
@@ -172,86 +155,66 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let events = [], users = {}, currentUser = null;
+let events = [], team = [];
 
-function attemptLogin() {
-    let u = document.getElementById('loginUser').value, p = document.getElementById('loginPass').value;
-    if (u === "حمادي" && p === "amouhfy2025") {
-        loginSuccess({ pseudo: "حمادي", role: "superadmin" }); return;
-    }
-    alert("خطأ في الدخول!");
-}
-
-function loginSuccess(user) {
-    currentUser = user; localStorage.setItem('bechaSession', JSON.stringify(user));
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'flex';
-    startSync();
+function login() {
+    if(document.getElementById('loginPass').value === "amouhfy2025") {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'flex';
+        startSync();
+    } else { alert("غلط!"); }
 }
 
 function startSync() {
     db.ref('BechaEventsData').on('value', snap => {
         const d = snap.val();
-        if (d) {
+        if(d) {
             events = d.events || [];
-            users = d.users || {};
-            
-            const dot = document.getElementById('syncDot');
-            dot.classList.add('pulse');
-            setTimeout(() => dot.classList.remove('pulse'), 1500);
-            
-            render();
+            team = d.team || [];
+            updateUI();
         }
     });
 }
 
-function render() {
-    // تحديث السيولة
+function updateUI() {
     let total = events.reduce((s, e) => s + (parseFloat(e.price) || 0), 0);
-    document.getElementById('totalAmount').innerText = total + " د.ت";
-
-    // تحديث حجوزات اليوم
+    document.getElementById('totalBalance').innerText = total + " د.ت";
+    document.getElementById('empSelect').innerHTML = team.map((t, i) => `<option value="${i}">${t.name}</option>`).join('');
+    
     let today = new Date().toISOString().slice(0, 10);
     let todayList = events.filter(e => e.date === today);
-    let todayDiv = document.getElementById('todayEventsList');
-    todayDiv.innerHTML = todayList.length ? '' : "لا يوجد حجوزات اليوم.";
-    todayList.forEach(e => {
-        todayDiv.innerHTML += `<div class="event-item"><b>${e.name}</b> <span>🕒 ${e.time || '--:--'}</span></div>`;
-    });
-
-    // تحديث قائمة المستخدمين (لـ حمادي)
-    if(currentUser.role === 'superadmin') {
-        let uDiv = document.getElementById('usersList');
-        uDiv.innerHTML = '<h3>🔑 كلمات السر:</h3>';
-        Object.keys(users).forEach(k => {
-            uDiv.innerHTML += `<div style="padding:10px; border-bottom:1px solid #eee;">👤 ${users[k].pseudo} : <b>${users[k].pass}</b></div>`;
-        });
-    }
+    document.getElementById('todayEventsList').innerHTML = todayList.map(e => `<div class='card'>${e.name}</div>`).join('') || "لا يوجد عروض.";
 }
 
 function addEvent() {
     let name = document.getElementById('name').value, date = document.getElementById('date').value;
     if(!name || !date) return;
-    events.push({ name, date, time: document.getElementById('time').value, price: document.getElementById('price').value });
-    db.ref('BechaEventsData').update({ events: events, lastUpdate: Date.now() });
-    alert("تم الحفظ!"); show('home');
+    events.push({ name, date, price: document.getElementById('price').value });
+    db.ref('BechaEventsData').update({ events: events });
+    alert("حفظ!");
 }
 
-function show(id, btn) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    if(btn) {
-        document.querySelectorAll('.menu button').forEach(b => b.classList.remove('active-nav'));
-        btn.classList.add('active-nav');
-    }
+function generateAccountImage() {
+    let idx = document.getElementById('empSelect').value;
+    let member = team[idx];
+    document.getElementById('expName').innerText = member.name;
+    document.getElementById('expDate').innerText = new Date().toLocaleDateString('ar-TN');
+    document.getElementById('expPrice').innerText = member.price + " د.ت";
+    document.getElementById('expTotal').innerText = "المجموع: " + member.price + " د.ت";
+
+    html2canvas(document.getElementById('hiddenExportArea'), { scale: 3 }).then(canvas => {
+        document.getElementById('resultImage').src = canvas.toDataURL("image/png");
+        document.getElementById('imageModal').style.display = 'flex';
+    });
 }
 
-function logout() { localStorage.removeItem('bechaSession'); location.reload(); }
-function updateClock() { document.getElementById('liveClock').innerText = "🕒 " + new Date().toLocaleTimeString('ar-TN', {hour:'2-digit', minute:'2-digit'}); }
-setInterval(updateClock, 1000); updateClock();
+function showSection(id) {
+    document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
+}
 
-let session = localStorage.getItem('bechaSession');
-if(session) loginSuccess(JSON.parse(session));
+function logout() { location.reload(); }
+setInterval(() => { document.getElementById('liveClock').innerText = "🕒 " + new Date().toLocaleTimeString('ar-TN'); }, 1000);
 </script>
 </body>
 </html>
