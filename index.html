@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Becha Events PRO - Universal Edition</title>
+    <title>Becha Events PRO - Ultimate 2026</title>
     
     <meta name="theme-color" content="#E10600">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -19,7 +21,6 @@
         :root { --primary-red: #E10600; --white: #ffffff; --light-bg: #f4f7f6; --sidebar-width: 250px; }
         body { font-family: 'Cairo', sans-serif; background: var(--light-bg); margin: 0; direction: rtl; overflow-x: hidden; }
         
-        /* Layout Structure */
         .app-container { display: flex; min-height: 100vh; }
         aside { 
             width: var(--sidebar-width); background: var(--white); border-left: 1px solid #ddd; 
@@ -36,19 +37,15 @@
 
         .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 5px solid var(--primary-red); }
         .red-btn { background: var(--primary-red); color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; font-family: 'Cairo'; margin-top: 10px; font-size: 16px; transition: 0.2s; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Cairo'; font-size: 15px; }
-
-        .event-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #ddd; font-family: 'Cairo'; font-size: 15px; box-sizing: border-box; }
         
-        /* Modal Style */
+        .event-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
+        .status-paid { color: #198754; font-weight: bold; }
+        
         #imageModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         #resultImage { max-width: 100%; max-height: 80%; border-radius: 10px; border: 4px solid white; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
 
-        /* القالب المخفي (iPhone & PC Secure) */
-        #hiddenExportArea { 
-            position: absolute; left: -9999px; top: 0; width: 500px; padding: 0; background: white; 
-            border: 1px solid #ddd;
-        }
+        #hiddenExportArea { position: absolute; left: -9999px; top: 0; width: 500px; background: white; padding: 0; border: 1px solid #ddd; }
         .export-box { padding: 40px; border-top: 20px solid var(--primary-red); text-align: center; }
     </style>
 </head>
@@ -56,9 +53,9 @@
 
 <div id="loginOverlay" style="position:fixed; inset:0; background:white; z-index:20000; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
     <h1 style="color:var(--primary-red); font-weight:900; font-size:40px; margin:0;">BECHA EVENTS</h1>
-    <p style="color:#666; margin-bottom:30px;">نظام الإدارة - حمادي داود</p>
+    <p style="color:#666; margin-bottom:30px;">نظام الإدارة الشامل - حمادي داود</p>
     <input type="password" id="loginPass" placeholder="كلمة السر" style="max-width:320px; text-align:center;">
-    <button class="red-btn" style="max-width:320px;" onclick="login()">دخول</button>
+    <button class="red-btn" style="max-width:320px;" onclick="login()">دخول للمنظومة</button>
 </div>
 
 <div class="app-container" id="mainApp" style="display:none;">
@@ -78,8 +75,9 @@
     <main>
         <div id="home" class="content-section">
             <div class="card" style="text-align:center;">
-                <h3 style="margin:0; color:#888;">السيولة المقبوضة 💰</h3>
+                <h3 style="margin:0; color:#888;">السيولة المقبوضة فعلياً 💰</h3>
                 <h1 id="totalBalance" style="color:var(--primary-red); font-size:45px; margin:10px 0;">0 د.ت</h1>
+                <p style="font-size:12px; color:#999;">تسبقات مقبوضة + حفلات خالصة</p>
             </div>
             <div class="card">
                 <h2>📅 برنامج اليوم</h2>
@@ -90,13 +88,19 @@
         <div id="events" class="content-section" style="display:none;">
             <div class="card">
                 <h2>➕ إضافة حجز جديد</h2>
-                <input type="text" id="name" placeholder="إسم المؤسسة">
-                <input type="date" id="date">
-                <input type="number" id="price" placeholder="الثمن">
-                <button class="red-btn" onclick="addEvent()">حفظ في السحابة</button>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
+                    <input type="text" id="name" placeholder="اسم الروضة / المؤسسة">
+                    <input type="tel" id="phone" placeholder="رقم الهاتف">
+                    <input type="text" id="address" placeholder="العنوان (مثال: طيور الجنة صفاقس)">
+                    <input type="date" id="date">
+                    <input type="time" id="time">
+                    <input type="number" id="price" placeholder="الثمن الكلي (مثال: 300)">
+                    <input type="number" id="advance" placeholder="التسبقة المقبوضة (مثال: 50)">
+                </div>
+                <button class="red-btn" onclick="addEvent()">حفظ الحجز في السحابة</button>
             </div>
             <div class="card">
-                <h2>📋 سجل الحفلات</h2>
+                <h2>📋 سجل الحفلات (تحيين وقبض)</h2>
                 <div id="allEventsList"></div>
             </div>
         </div>
@@ -107,6 +111,10 @@
                 <select id="empSelect"></select>
                 <button class="red-btn" style="background:#198754;" onclick="generateAccountImage()">توليد صورة الكشف</button>
             </div>
+            <div class="card" style="border-color:#198754;">
+                <h2>⚙️ استرجاع البيانات (Recovery)</h2>
+                <button class="red-btn" style="background:#198754;" onclick="manualRecovery()">🔄 استعادة بيانات الهاتف القديمة</button>
+            </div>
         </div>
     </main>
 </div>
@@ -116,11 +124,11 @@
         <h1 style="color:#E10600; margin:0; font-size:35px; font-weight:bold;">BECHA EVENTS</h1>
         <div style="margin-top:30px; text-align:right; font-size:22px; line-height:1.6; color:#333;">
             <b>الموظف:</b> <span id="expName">---</span><br>
-            <b>التاريخ:</b> <span id="expDate">---</span><br>
-            <b>المجموع:</b> <span id="expPrice" style="color:#E10600; font-weight:bold;">---</span> <b>د.ت</b>
+            <b>تاريخ الكشف:</b> <span id="expDate">---</span><br>
+            <b>المجموع الكلي:</b> <span id="expPrice" style="color:#E10600; font-weight:bold;">---</span> <b>د.ت</b>
         </div>
         <div style="margin-top:40px; border:2px solid #E10600; padding:15px; border-radius:10px; color:#E10600; font-weight:bold; font-size:20px;">
-            خالص ومؤكد ✅
+            تم التأكيد والمراجعة ✅
         </div>
     </div>
 </div>
@@ -151,7 +159,7 @@ function login() {
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('mainApp').style.display = 'flex';
         startSync();
-    } else { alert("غلط!"); }
+    } else { alert("كلمة السر خاطئة!"); }
 }
 
 function startSync() {
@@ -166,62 +174,90 @@ function startSync() {
 }
 
 function updateUI() {
-    let paidTotal = events.filter(e => e.collected === true).reduce((s, e) => s + (parseFloat(e.price) || 0), 0);
-    document.getElementById('totalBalance').innerText = paidTotal + " د.ت";
+    // حساب السيولة: التسبقة للحفلات غير الخالصة + الثمن الكلي للحفلات الخالصة
+    let total = events.reduce((s, e) => {
+        if(e.collected) return s + (parseFloat(e.price) || 0);
+        return s + (parseFloat(e.advance) || 0);
+    }, 0);
+    document.getElementById('totalBalance').innerText = total + " د.ت";
+    
     document.getElementById('empSelect').innerHTML = team.map((t, i) => `<option value="${i}">${t.name}</option>`).join('');
     
-    document.getElementById('allEventsList').innerHTML = events.map((e, i) => `
+    let today = new Date().toISOString().slice(0, 10);
+    let todayList = events.filter(e => e.date === today);
+    document.getElementById('todayEventsList').innerHTML = todayList.map(e => `
+        <div style="padding:10px; border-bottom:1px solid #eee;"><b>${e.name}</b> - 🕒 ${e.time || '--:--'} | 📍 ${e.address || 'بلا عنوان'}</div>
+    `).join('') || "لا يوجد عروض اليوم.";
+
+    document.getElementById('allEventsList').innerHTML = events.map((e, i) => {
+        let remaining = (parseFloat(e.price) || 0) - (parseFloat(e.advance) || 0);
+        return `
         <div class="event-item">
-            <div><b>${e.name}</b><br><small>${e.date}</small></div>
-            <div>
-                ${e.collected ? '<span style="color:green">✅</span>' : `<button class="red-btn" style="width:auto; padding:5px 10px;" onclick="collectMoney(${i})">قبض ${e.price}د</button>`}
-                <button onclick="deleteEvent(${i})" style="border:none; background:none; color:red; margin-right:10px;">🗑</button>
+            <div style="flex-grow:1;">
+                <b>${e.name}</b><br>
+                <small>${e.date} | 📍 ${e.address || 'بدون عنوان'}</small><br>
+                <small style="color:#666;">الثمن: ${e.price}د | تسبقة: ${e.advance || 0}د</small>
+            </div>
+            <div style="text-align:left;">
+                ${e.collected ? '<span class="status-paid">✅ خالص</span>' : `<button class="red-btn" style="width:auto; padding:5px 10px; font-size:12px;" onclick="collectMoney(${i})">قبض الباقي (${remaining}د)</button>`}
+                <br><button onclick="deleteEvent(${i})" style="border:none; background:none; color:red; margin-top:5px; cursor:pointer;">🗑 حذف</button>
             </div>
         </div>
-    `).reverse().join('');
+        `;
+    }).reverse().join('');
 }
 
 function addEvent() {
     let name = document.getElementById('name').value, date = document.getElementById('date').value, price = document.getElementById('price').value;
-    if(!name || !date || !price) return;
-    events.push({ name, date, price, collected: false });
+    if(!name || !date || !price) { alert("الرجاء تعمير الإسم والتاريخ والثمن!"); return; }
+    
+    events.push({ 
+        name, phone: document.getElementById('phone').value, address: document.getElementById('address').value,
+        date, time: document.getElementById('time').value, price: price,
+        advance: document.getElementById('advance').value || 0, collected: false 
+    });
     db.ref('BechaEventsData').update({ events: events });
-    alert("تم الحفظ!");
+    alert("تم تسجيل الحجز بنجاح!");
 }
 
 function collectMoney(i) {
-    events[i].collected = true;
-    db.ref('BechaEventsData').update({ events: events });
+    if(confirm("تأكيد قبض باقي المبلغ؟")) {
+        events[i].collected = true;
+        db.ref('BechaEventsData').update({ events: events });
+    }
 }
 
 function deleteEvent(i) {
-    if(confirm("حذف؟")) {
+    if(confirm("هل أنت متأكد من حذف هذه الحفلة؟")) {
         events.splice(i, 1);
         db.ref('BechaEventsData').update({ events: events });
     }
 }
 
+function manualRecovery() {
+    let localE = JSON.parse(localStorage.getItem('eventsData') || '[]');
+    let localT = JSON.parse(localStorage.getItem('teamData') || '[]');
+    if(localE.length > 0 || localT.length > 0) {
+        db.ref('BechaEventsData').update({ events: localE, team: localT });
+        alert("تم رفع بيانات الهاتف القديمة إلى السحابة بنجاح!");
+    } else {
+        alert("لا توجد بيانات قديمة مخزنة في هذا الهاتف.");
+    }
+}
+
 function generateAccountImage() {
     let member = team[document.getElementById('empSelect').value];
-    if(!member) return;
+    if(!member) { alert("الرجاء إضافة فريق أولاً"); return; }
+    
     document.getElementById('expName').innerText = member.name;
     document.getElementById('expDate').innerText = new Date().toLocaleDateString('ar-TN');
     document.getElementById('expPrice').innerText = member.price;
 
     const area = document.getElementById('hiddenExportArea');
-    
-    // الحل السحري للأيفون: استعمال scale عالي مع تعطيل الـ Cache
-    html2canvas(area, {
-        scale: 3,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-    }).then(canvas => {
+    html2canvas(area, { scale: 3, useCORS: true, allowTaint: true, backgroundColor: "#ffffff" }).then(canvas => {
         document.getElementById('resultImage').src = canvas.toDataURL("image/png");
         document.getElementById('imageModal').style.display = 'flex';
-    }).catch(err => {
-        alert("فشل التصدير.");
-    });
+    }).catch(err => { alert("فشل التصدير."); });
 }
 
 function showSection(id) {
